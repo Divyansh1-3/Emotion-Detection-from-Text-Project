@@ -192,20 +192,25 @@ def retrieve_similar(query: str, top_k: int | None = None) -> list[RetrievedItem
     return results
 
 
-def compute_knn_vote(retrieved: list[RetrievedItem]) -> dict[str, float]:
-    """Compute a normalized probability distribution over EMOTION_LABELS from retrieved exemplars."""
+def compute_knn_vote(retrieved: list[RetrievedItem], min_similarity: float = 0.25) -> dict[str, float]:
+    """Compute a normalized probability distribution over EMOTION_LABELS from retrieved exemplars.
+    
+    Only exemplars meeting a minimum similarity threshold (default 0.25) contribute to the vote,
+    preventing weak/spurious single-word overlaps from skewing the distribution.
+    """
     vote = {label: 0.0 for label in EMOTION_LABELS}
     total_weight = 0.0
 
     for item in retrieved:
         if item.source == "exemplar" and item.label in vote:
-            weight = max(0.01, item.similarity)
-            vote[item.label] += weight
-            total_weight += weight
+            if item.similarity >= min_similarity:
+                weight = float(item.similarity)
+                vote[item.label] += weight
+                total_weight += weight
 
     if total_weight > 0:
         return {k: round(v / total_weight, 4) for k, v in vote.items()}
 
-    # Uniform prior if no exemplars
+    # Uniform neutral prior if no exemplars meet confidence threshold
     uniform = round(1.0 / len(EMOTION_LABELS), 4)
     return {k: uniform for k in EMOTION_LABELS}

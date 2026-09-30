@@ -35,14 +35,21 @@ def fuse_signals(
     settings = get_settings()
 
     # Determine weighting weights based on whether a true transformer model ran
+    has_rule_signal = any(v > 0 for v in rule_res.emotion_hints.values())
     if ml_backend == "transformer":
         w_ml = 0.70
         w_rule = 0.15
         w_knn = 0.15
     else:
-        w_ml = 0.0
-        w_rule = 0.60
-        w_knn = 0.40
+        if has_rule_signal:
+            w_ml = 0.0
+            w_rule = 0.75
+            w_knn = 0.25
+        else:
+            # If no rule cues matched, use neutral heuristic distribution as baseline
+            w_ml = 0.60
+            w_rule = 0.0
+            w_knn = 0.40
 
     blended: dict[str, float] = {}
     for label in EMOTION_LABELS:
