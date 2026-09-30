@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis #{{ analysis.id }} &bull; Inspect Detail{% endblock %}
+
+{% block content %}
+<div class="inspect-container">
+  
+  <div class="inspect-header">
+    <div>
+      <a href="/inspect" class="btn btn-outline btn-xs mb-2">
+        <i class="fa-solid fa-arrow-left"></i> Back to /inspect list
+      </a>
+      <h1>Transaction Audit: Record #{{ analysis.id }}</h1>
+      <p class="text-muted">Recorded: {{ analysis.created_at }} &bull; Request ID: <code>{{ analysis.request_id }}</code></p>
+    </div>
+    <div class="header-actions">
+      <a href="/api/v1/emotion/results/{{ analysis.id }}" target="_blank" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-code"></i> Raw JSON
+      </a>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    
+    <!-- Left Column: Input and Verdict -->
+    <div class="detail-card">
+      <h3>Input Utterance</h3>
+      <blockquote class="input-quote">"{{ analysis.input_text }}"</blockquote>
+      
+      <div class="verdict-banner mt-3">
+        <div class="verdict-main">
+          <span class="verdict-emoji">{{ emojis.get(analysis.primary_emotion, '•') }}</span>
+          <div class="verdict-titles">
+            <span class="verdict-label">Predicted Emotion</span>
+            <h2 class="verdict-emotion">{{ analysis.primary_emotion|capitalize }}</h2>
+          </div>
+        </div>
+        <div class="verdict-badges">
+          <div class="score-badge">
+            <span class="badge-title">Calibrated Confidence</span>
+            <span class="badge-val">{{ (analysis.confidence * 100)|round(1) }}%</span>
+          </div>
+          {% if analysis.uncertain %}
+            <div class="flag-badge warning"><i class="fa-solid fa-triangle-exclamation"></i> Uncertain</div>
+          {% endif %}
+          {% if analysis.sarcasm %}
+            <div class="flag-badge sarcasm"><i class="fa-solid fa-masks-theater"></i> Sarcasm ({{ (analysis.sarcasm_score * 100)|round(1) }}%)</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <h3 class="mt-4">Full Emotion Probability Distribution</h3>
+      <div class="scores-table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Emotion</th>
+              <th>Probability</th>
+              <th>Distribution Bar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in analysis.emotion_scores %}
+            <tr>
+              <td><strong>{{ emojis.get(s.label, '') }} {{ s.label }}</strong></td>
+              <td class="font-mono">{{ (s.score * 100)|round(2) }}%</td>
+              <td style="width: 50%;">
+                <div class="mini-bar">
+                  <div class="mini-fill" style="width: {{ (s.score * 100)|round(0) }}%;"></div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="mt-4">Grounded Explanation</h3>
+      <div class="rationale-box">
+        <p class="rationale-text">{{ analysis.rationale }}</p>
+        <span class="text-sm text-muted">Generated via {{ 'OpenAI API' if analysis.llm_used else 'Deterministic Rule Template' }}</span>
+      </div>
+    </div>
+
+    <!-- Right Column: Pipeline Route, Grounding Evidence, Metadata -->
+    <div class="detail-card">
+      <h3>Execution Route Trace</h3>
+      <div class="route-pills mb-3">
+        {% for step in analysis.route %}
+          <span class="route-pill active"><i class="fa-solid fa-check"></i> {{ step }}</span>
+        {% endfor %}
+      </div>
+      <p class="text-sm text-muted">Latency: <strong>{{ analysis.latency_ms|round(1) }} ms</strong> &bull; Mode: <strong>{{ analysis.mode }}</strong></p>
+
+      <h3 class="mt-4">Retrieved RAG Evidence Snippets</h3>
+      <ul class="sources-list">
+        {% for s in analysis.sources %}
+        <li class="source-item">
+          <div class="source-tag">[{{ s.source }} &bull; {{ s.label }} &bull; sim: {{ (s.similarity * 100)|round(1) }}%]</div>
+          <div class="source-text">{{ s.text }}</div>
+        </li>
+        {% else %}
+        <li class="text-muted">No retrieval exemplars recorded.</li>
+        {% endfor %}
+      </ul>
+
+      <h3 class="mt-4">Safety & Operational Warnings</h3>
+      <ul class="warnings-list">
+        {% for w in analysis.warnings %}
+        <li><i class="fa-solid fa-triangle-exclamation text-warning"></i> {{ w }}</li>
+        {% else %}
+        <li class="text-muted">No boundary warnings generated.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

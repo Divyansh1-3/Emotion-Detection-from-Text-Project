@@ -1,0 +1,3 @@
+This system is an NLP text analysis instrument designed exclusively for linguistic tone and sentiment analysis.
+It is explicitly NOT a clinical, medical, psychiatric, or diagnostic tool.
+Outputs reflect statistical lexical and semantic associations in text, not individual psychological diagnoses or affective health assessments.

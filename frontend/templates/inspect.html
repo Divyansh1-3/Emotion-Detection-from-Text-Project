@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Backend Inspect View &bull; P_098 Emotion Detection{% endblock %}
+
+{% block content %}
+<div class="inspect-container">
+  
+  <div class="inspect-header">
+    <div>
+      <h1><i class="fa-solid fa-server"></i> Server-Side /inspect View</h1>
+      <p class="text-muted">
+        Direct query over the SQLite persistence repository (<code>{{ total }}</code> total transactions recorded).
+        Demonstrates frontend &harr; backend parity: the exact same record served to the UI is stored and verifiable here.
+      </p>
+    </div>
+    <div class="header-actions">
+      <a href="/api/v1/emotion/results" target="_blank" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-code"></i> Raw JSON Endpoint
+      </a>
+      <a href="/" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-plus"></i> New Analysis
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Stats Strip -->
+  <div class="stats-strip">
+    <div class="stat-item">
+      <span class="stat-num">{{ total }}</span>
+      <span class="stat-name">Recorded Runs</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">{{ stats.uncertain }}</span>
+      <span class="stat-name">Uncertain</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">{{ stats.sarcastic }}</span>
+      <span class="stat-name">Sarcastic</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">{{ (stats.avg_confidence * 100)|round(1) }}%</span>
+      <span class="stat-name">Mean Confidence</span>
+    </div>
+  </div>
+
+  <!-- Analyses Data Table -->
+  <div class="card table-card">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>Input Text</th>
+            <th>Emotion</th>
+            <th>Confidence</th>
+            <th>Sarcasm</th>
+            <th>Uncertain</th>
+            <th>Latency</th>
+            <th>Engines Executed</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in analyses %}
+          <tr>
+            <td class="font-mono">#{{ item.id }}</td>
+            <td class="text-sm text-muted">{{ item.created_at[:19].replace('T', ' ') }}</td>
+            <td class="text-truncate" title="{{ item.input_text }}">{{ item.input_text }}</td>
+            <td>
+              <span class="emotion-pill {{ item.primary_emotion }}">
+                {{ emojis.get(item.primary_emotion, '•') }} {{ item.primary_emotion }}
+              </span>
+            </td>
+            <td>
+              <div class="conf-cell">
+                <span>{{ (item.confidence * 100)|round(1) }}%</span>
+                <div class="mini-bar">
+                  <div class="mini-fill" style="width: {{ (item.confidence * 100)|round(0) }}%;"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if item.sarcasm %}
+                <span class="status-tag sarcasm"><i class="fa-solid fa-check"></i> Yes ({{ (item.sarcasm_score * 100)|round(0) }}%)</span>
+              {% else %}
+                <span class="status-tag muted">No</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if item.uncertain %}
+                <span class="status-tag warning"><i class="fa-solid fa-triangle-exclamation"></i> Uncertain</span>
+              {% else %}
+                <span class="status-tag success">Clear</span>
+              {% endif %}
+            </td>
+            <td class="text-sm font-mono">{{ item.latency_ms|round(1) }} ms</td>
+            <td>
+              <div class="engine-tags">
+                {% for eng in item.engines_used %}
+                  <span class="mini-engine-tag">{{ eng }}</span>
+                {% endfor %}
+              </div>
+            </td>
+            <td>
+              <a href="/inspect/{{ item.id }}" class="btn btn-outline btn-xs">
+                Inspect <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="10" class="text-center py-4 text-muted">
+              No analyses recorded yet. Return to the <a href="/">Dashboard</a> to run an emotion analysis.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

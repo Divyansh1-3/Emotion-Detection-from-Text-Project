@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}P_098 — Emotion Detection from Text{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <a href="/" class="brand-link">
+          <span class="brand-badge">P_098</span>
+          <span class="brand-title">Emotion Detection <span class="brand-sub">Hybrid Engine</span></span>
+        </a>
+      </div>
+      <nav class="nav-links">
+        <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="/inspect" class="nav-item {% if '/inspect' in request.path %}active{% endif %}">
+          <i class="fa-solid fa-database"></i> Backend /inspect
+        </a>
+        <a href="/health" target="_blank" class="nav-item">
+          <i class="fa-solid fa-heart-pulse"></i> /health
+        </a>
+        <a href="https://github.com" target="_blank" class="nav-item github-link">
+          <i class="fa-brands fa-github"></i> Repository
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-info">
+        <p><strong>P_098 Emotion Detection from Text</strong> &bull; HCL Industrial Training Project</p>
+        <p class="disclaimer">
+          <i class="fa-solid fa-shield-halved"></i> 
+          Non-diagnostic NLP analysis tool. Designed for linguistic tone and sentiment analysis only.
+        </p>
+      </div>
+      <div class="footer-meta">
+        <span>Flask 3.0 &bull; DistilRoBERTa &bull; RAG &bull; Calibrated Fusion</span>
+      </div>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

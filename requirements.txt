@@ -1,0 +1,37 @@
+# ── P_098 Emotion Detection from Text — Python dependencies ───────────────
+# Install:  python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
+# CPU-only; sized for an 8 GB-RAM laptop. Model weights are downloaded separately
+# (see scripts/download_models.py) and are never committed.
+
+# Web / API
+Flask>=3.0
+Werkzeug>=3.0
+pydantic>=2.6
+python-dotenv>=1.0
+
+# ML / NLP (pretrained transformers)
+transformers>=4.44
+torch>=2.4
+scikit-learn>=1.4
+sentence-transformers>=3.0
+
+# Data handling
+pandas>=2.2
+numpy>=1.26
+emoji>=2.12
+langdetect>=1.0.9
+
+# LLM (OpenAI-compatible client; works with OpenAI or any compatible endpoint)
+openai>=1.40
+
+# Evaluation charts + presentation deck
+matplotlib>=3.8
+python-pptx>=0.6.23
+
+# Tests
+pytest>=8.0
+
+# ── Optional acceleration ────────────────────────────────────────────────
+# The retrieval engine defaults to scikit-learn cosine k-NN (no native build,
+# always installs). Uncomment for a FAISS backend on large corpora:
+# faiss-cpu>=1.8
