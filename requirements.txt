@@ -24,9 +24,10 @@ langdetect>=1.0.9
 # LLM (OpenAI-compatible client; works with OpenAI or any compatible endpoint)
 openai>=1.40
 
-# Evaluation charts + presentation deck
+# Evaluation charts + presentation deck & documentation
 matplotlib>=3.8
 python-pptx>=0.6.23
+python-docx>=1.1.0
 
 # Tests
 pytest>=8.0
