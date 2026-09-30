@@ -8,10 +8,11 @@ CRITICAL CONSTRAINTS:
 4. Output MUST be valid JSON only, without markdown fences or additional text.
 
 JSON Schema:
-{
+{{
   "explanation": "1-2 sentence grounded explanation of linguistic cues.",
   "confidence_reason": "Brief note on why the confidence is high or why uncertainty was flagged."
-}
+}}
+
 
 CONTEXT:
 Input text: """{input_text}"""

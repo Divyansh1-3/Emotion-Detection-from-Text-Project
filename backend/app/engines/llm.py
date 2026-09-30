@@ -11,8 +11,10 @@ Key design principles:
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
+
 
 from backend.app.core.config import get_settings
 from backend.app.domain.emotion_schema import EmotionScore, RetrievedItem
@@ -132,16 +134,21 @@ def generate_rationale(
                 ],
                 max_tokens=settings.llm_max_tokens,
                 temperature=0.2,
-                response_format={"type": "json_object"} if attempt == 0 else None,
             )
+
             raw = response.choices[0].message.content or ""
+            clean_raw = raw.strip()
+            if clean_raw.startswith("```"):
+                clean_raw = re.sub(r"^```(?:json)?\s*", "", clean_raw)
+                clean_raw = re.sub(r"\s*```$", "", clean_raw)
             try:
-                data = json.loads(raw.strip())
+                data = json.loads(clean_raw.strip())
                 explanation = data.get("explanation", "").strip()
                 if explanation:
                     return explanation, True
             except Exception:
                 continue
+
 
     except Exception:
         pass
