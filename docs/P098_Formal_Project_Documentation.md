@@ -41,7 +41,7 @@ To overcome the fragility of single-model architectures, P_098 deploys a synchro
 5. Strictly bounded Large Language Model (LLM) rationale synthesis that generates human-readable linguistic justifications without permitting the LLM to alter the mathematically verified classification.
 6. A clinical safety and prompt-injection hardening layer preventing diagnostic mischaracterization and malicious system exploitation.
 
-The system is optimized for commodity hardware (operating comfortably within 8 GB RAM on multi-core CPUs without requiring dedicated GPUs or recurring cloud API expenditures). Empirical evaluation demonstrates high discriminative precision across all 7 affective classes (Macro-F1: 0.886), robust sarcasm resolution, mean inference latencies under 70 ms, and absolute frontend-to-backend database parity through a persistent SQLite3 audit repository.
+The system is optimized for commodity hardware (operating comfortably within 8 GB RAM on multi-core CPUs without requiring dedicated GPUs or recurring cloud API expenditures). Empirical evaluation demonstrates high discriminative precision across all 7 affective classes (Macro-F1: 0.913, Accuracy: 91.4%), robust sarcasm resolution (F1: 0.900, Accuracy: 88.6%), warm single-utterance inference latencies under 70 ms, and absolute frontend-to-backend database parity through a persistent SQLite3 audit repository.
 
 ---
 
@@ -436,24 +436,24 @@ The system was benchmarked using an offline evaluation suite consisting of balan
 
 | Evaluation Dimension | Primary Metric | Baseline Engineering Target | Measured Production Result | Operational Status |
 | :--- | :--- | :---: | :---: | :---: |
-| **Emotion Classification** | **Macro-Averaged F1** | $\ge 0.700$ | **0.886** | **EXCEEDED TARGET** |
-| **Emotion Classification** | **Overall Accuracy** | $\ge 70.0\%$ | **88.6%** | **EXCEEDED TARGET** |
-| **Emotion Classification** | **Weighted F1** | $\ge 0.700$ | **0.886** | **EXCEEDED TARGET** |
-| **Sarcasm Resolution** | **Sarcasm F1 Score** | $\ge 0.650$ | **0.857** | **EXCEEDED TARGET** |
-| **Sarcasm Precision** | **True Positive Precision**| $\ge 0.750$ | **0.800** | **EXCEEDED TARGET** |
-| **Sarcasm Recall** | **Irony Recall Rate** | $\ge 0.700$ | **0.923** | **EXCEEDED TARGET** |
-| **Inference Latency** | **Mean CPU Latency** | $< 150\text{ ms}$ | **47.5 – 68.2 ms** | **2.2x FASTER THAN TARGET** |
+| **Emotion Classification** | **Macro-Averaged F1** | $\ge 0.700$ | **0.913** | **EXCEEDED TARGET** |
+| **Emotion Classification** | **Overall Accuracy** | $\ge 70.0\%$ | **91.4%** | **EXCEEDED TARGET** |
+| **Emotion Classification** | **Weighted F1** | $\ge 0.700$ | **0.913** | **EXCEEDED TARGET** |
+| **Sarcasm Resolution** | **Sarcasm F1 Score** | $\ge 0.650$ | **0.900** | **EXCEEDED TARGET** |
+| **Sarcasm Precision** | **True Positive Precision**| $\ge 0.750$ | **0.900** | **EXCEEDED TARGET** |
+| **Sarcasm Recall** | **Irony Recall Rate** | $\ge 0.700$ | **0.900** | **EXCEEDED TARGET** |
+| **Inference Latency** | **Warm CPU Latency** | $< 150\text{ ms}$ | **47.5 – 68.2 ms** | **2.2x FASTER THAN TARGET** |
 | **95th-Percentile Latency** | **P95 CPU Latency** | $< 250\text{ ms}$ | **59.3 – 89.0 ms** | **EXCEEDED TARGET** |
 | **Memory Footprint** | **Peak Process RAM** | $< 2.0\text{ GB}$ | **~1.15 GB** | **OPTIMAL RESOURCE USE** |
 
 #### Per-Class Emotion Breakdown
-- **Joy:** Precision: 0.909 &bull; Recall: 1.000 &bull; **F1: 0.952**
-- **Anger:** Precision: 0.880 &bull; Recall: 0.880 &bull; **F1: 0.880**
-- **Sadness:** Precision: 0.875 &bull; Recall: 0.875 &bull; **F1: 0.875**
-- **Fear:** Precision: 0.857 &bull; Recall: 0.857 &bull; **F1: 0.857**
-- **Disgust:** Precision: 0.875 &bull; Recall: 0.875 &bull; **F1: 0.875**
-- **Surprise:** Precision: 0.880 &bull; Recall: 0.840 &bull; **F1: 0.859**
-- **Neutral:** Precision: 0.833 &bull; Recall: 0.880 &bull; **F1: 0.856**
+- **Joy:** Precision: 1.000 &bull; Recall: 1.000 &bull; **F1: 1.000**
+- **Fear:** Precision: 1.000 &bull; Recall: 1.000 &bull; **F1: 1.000**
+- **Surprise:** Precision: 1.000 &bull; Recall: 1.000 &bull; **F1: 1.000**
+- **Neutral:** Precision: 1.000 &bull; Recall: 1.000 &bull; **F1: 1.000**
+- **Sadness:** Precision: 1.000 &bull; Recall: 0.800 &bull; **F1: 0.889**
+- **Disgust:** Precision: 0.714 &bull; Recall: 1.000 &bull; **F1: 0.833**
+- **Anger:** Precision: 0.750 &bull; Recall: 0.600 &bull; **F1: 0.667**
 
 ### 10.2 Qualitative Engineering Deliverables
 1. **Zero False-Positive Degradation on Sincere Joy:** Through affective purity guards, genuine enthusiastic statements (*"I am excited to start my internship"*, *"Congratulations on the marvelous graduation"*) are never flagged as sarcastic.
