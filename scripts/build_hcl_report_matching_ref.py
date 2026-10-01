@@ -392,6 +392,16 @@ def generate_documents(docx_path: Path, md_path: Path):
         "AI/ML transformers, and data storage:"
     )
 
+    # Embed Layered Architecture Diagram
+    img_arch = Path("C:/Users/divya/HCL-Project/p098_layered_architecture.png")
+    if img_arch.exists():
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(4)
+        p_img.paragraph_format.space_after = Pt(8)
+        r_img = p_img.add_run()
+        r_img.add_picture(str(img_arch), width=Inches(6.8))
+
     add_heading_2(doc, "4.1 Layer Breakdown")
     # Table 2: Architecture Layers
     t_arch = doc.add_table(rows=6, cols=2)
@@ -411,6 +421,16 @@ def generate_documents(docx_path: Path, md_path: Path):
     # ---------------- 5. REQUEST WORKFLOW ----------------
     add_heading_1(doc, "5. Request Workflow")
     add_para(doc, "Every input utterance passes through a multi-stage pipeline before a verified prediction and rationale are returned:")
+
+    # Embed Request Flow Diagram
+    img_flow = Path("C:/Users/divya/HCL-Project/p098_request_flow.png")
+    if img_flow.exists():
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(4)
+        p_img.paragraph_format.space_after = Pt(8)
+        r_img = p_img.add_run()
+        r_img.add_picture(str(img_flow), width=Inches(6.5))
 
     add_heading_2(doc, "5.1 Step-by-Step Description")
     workflow_steps = [
@@ -739,6 +759,8 @@ A standalone LLM with no retrieval would guess reasons and could hallucinate non
 ## 4. System Architecture
 The system follows a five-layer architecture, cleanly separating presentation, API routing, hybrid engine logic, AI/ML transformers, and data storage:
 
+![Layered Architecture — Emotion Detector from Text](p098_layered_architecture.png)
+
 ### 4.1 Layer Breakdown
 
 | Layer | Components |
@@ -753,6 +775,8 @@ The system follows a five-layer architecture, cleanly separating presentation, A
 
 ## 5. Request Workflow
 Every input utterance passes through a multi-stage pipeline before a verified prediction and rationale are returned:
+
+![Request Flow — From User Text to Calibrated Affect Prediction](p098_request_flow.png)
 
 ### 5.1 Step-by-Step Description
 1. **Input Validation & Hygiene:** Checks text length (1–1000 chars), sanitizes prompt injections, and attaches clinical disclaimers.
