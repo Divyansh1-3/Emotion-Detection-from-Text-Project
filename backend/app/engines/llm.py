@@ -116,40 +116,41 @@ def generate_rationale(
     try:
         from openai import OpenAI
 
+        fast_timeout = min(float(settings.llm_timeout_seconds), 4.0)
         client = OpenAI(
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url,
-            timeout=settings.llm_timeout_seconds,
+            timeout=fast_timeout,
         )
 
-        for attempt in range(2):
-            response = client.chat.completions.create(
-                model=settings.openai_model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a concise, bounded NLP analysis explainer. Output valid JSON only.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                max_tokens=settings.llm_max_tokens,
-                temperature=0.2,
-            )
+        response = client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a concise, bounded NLP analysis explainer. Output valid JSON only.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=settings.llm_max_tokens,
+            temperature=0.2,
+            timeout=fast_timeout,
+        )
 
-            raw = response.choices[0].message.content or ""
-            clean_raw = raw.strip()
-            if clean_raw.startswith("```"):
-                clean_raw = re.sub(r"^```(?:json)?\s*", "", clean_raw)
-                clean_raw = re.sub(r"\s*```$", "", clean_raw)
-            try:
-                data = json.loads(clean_raw.strip())
-                explanation = data.get("explanation", "").strip()
-                if explanation:
-                    return explanation, True
-            except Exception:
-                continue
-
-
+        raw = response.choices[0].message.content or ""
+        clean_raw = raw.strip()
+        if clean_raw.startswith("```"):
+            clean_raw = re.sub(r"^```(?:json)?\s*", "", clean_raw)
+            clean_raw = re.sub(r"\s*```$", "", clean_raw)
+        try:
+            data = json.loads(clean_raw.strip())
+            explanation = data.get("explanation", "").strip()
+            if explanation:
+                return explanation, True
+        except Exception:
+            # If model returned direct non-JSON text explanation, use it if non-empty
+            if clean_raw and not clean_raw.startswith("{"):
+                return clean_raw, True
     except Exception:
         pass
 

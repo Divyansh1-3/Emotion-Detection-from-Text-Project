@@ -121,12 +121,17 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingState.classList.remove("hidden");
     analyzeBtn.disabled = true;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     try {
       const response = await fetch("/api/v1/emotion/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input: text }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -136,7 +141,12 @@ document.addEventListener("DOMContentLoaded", () => {
       lastResultData = data;
       renderSingleResult(data);
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        alert("Error: Analysis request timed out after 20 seconds. Please verify the backend server status.");
+      } else {
+        alert(`Error: ${err.message}`);
+      }
       emptyState.classList.remove("hidden");
     } finally {
       loadingState.classList.add("hidden");

@@ -28,7 +28,10 @@ def _load_pipeline(model_name: str):
             return _pipeline
         try:
             from transformers import pipeline
-            _pipeline = pipeline("text-classification", model=model_name, top_k=None)
+            try:
+                _pipeline = pipeline("text-classification", model=model_name, top_k=None, model_kwargs={"local_files_only": True})
+            except Exception:
+                _pipeline = pipeline("text-classification", model=model_name, top_k=None)
         except Exception:
             _load_failed = True
             _pipeline = None

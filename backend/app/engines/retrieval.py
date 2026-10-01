@@ -21,7 +21,7 @@ import numpy as np
 from backend.app.core.config import get_settings
 from backend.app.domain.emotion_schema import EMOTION_LABELS, RetrievedItem
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 _model = None
 _model_failed = False
 
@@ -43,7 +43,10 @@ def _get_embedding_model(model_name: str):
             return _model
         try:
             from sentence_transformers import SentenceTransformer
-            _model = SentenceTransformer(model_name)
+            try:
+                _model = SentenceTransformer(model_name, local_files_only=True)
+            except Exception:
+                _model = SentenceTransformer(model_name)
         except Exception:
             _model_failed = True
             _model = None

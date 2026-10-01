@@ -13,13 +13,18 @@ if str(ROOT) not in sys.path:
 
 from backend.app.main import app
 from backend.app.core.config import get_settings
+from backend.app.engines.warmup import warm_up_models
 
 if __name__ == "__main__":
     settings = get_settings()
+
+    # Pre-warm transformer models into RAM so web requests are instant
+    warm_up_models()
+
     banner = f"""
 ==================================================
   P_098 Emotion Detection from Text
-  Candidate: Divya | HCL Industrial Training
+  Candidate: Divyansh Yadav | HCL Industrial Training
   Interactive Dashboard : http://{settings.flask_host}:{settings.flask_port}
   Audit /inspect View   : http://{settings.flask_host}:{settings.flask_port}/inspect
   API Health Check      : http://{settings.flask_host}:{settings.flask_port}/health
@@ -29,5 +34,5 @@ if __name__ == "__main__":
     app.run(
         host=settings.flask_host,
         port=settings.flask_port,
-        debug=settings.flask_env == "development",
+        debug=False,
     )
