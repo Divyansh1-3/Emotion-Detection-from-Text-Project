@@ -60,12 +60,32 @@ def fuse_signals(
         score = (w_ml * p_ml) + (w_rule * p_rule) + (w_knn * p_knn)
         blended[label] = score
 
-    # Sarcasm signal fusion
+    # Sarcasm signal fusion & principled calibration
+    neg_em_sum = ml_dist.get("anger", 0.0) + ml_dist.get("disgust", 0.0) + ml_dist.get("sadness", 0.0)
+    has_praise = getattr(rule_res, "has_praise_token", False)
+    has_adversity = getattr(rule_res, "has_adversity_token", False)
+    has_ironic_punct = getattr(rule_res, "has_ironic_punct", False)
+    has_rule_marker = (rule_res.sarcasm_cue_score >= 0.35)
+
+    is_pure_joy = (ml_dist.get("joy", 0.0) >= 0.70 and neg_em_sum < 0.05 and not has_adversity and not has_rule_marker)
+    is_pure_sadness = (ml_dist.get("sadness", 0.0) >= 0.65 and not has_praise and not has_rule_marker)
+    is_pure_neutral = (ml_dist.get("neutral", 0.0) >= 0.60 and not has_praise and not has_adversity and not has_rule_marker and not has_ironic_punct)
+
     if ml_backend == "transformer":
-        if rule_res.sarcasm_cue_score >= 0.40:
+        if is_pure_joy or is_pure_sadness or is_pure_neutral:
+            # Genuine single emotion or timetable statement -> cannot be sarcasm (suppress social media bias)
+            sarcasm_prob = round(min(sarcasm_ml_prob * 0.15, 0.20), 4)
+        elif has_praise and (has_adversity or neg_em_sum >= 0.10):
+            # Contextual incongruity: praise words used in an adverse or negative situation
+            sarcasm_prob = round(max(0.85, sarcasm_ml_prob), 4)
+        elif has_rule_marker:
+            # Explicit sarcastic idiom detected
             sarcasm_prob = round(max(rule_res.sarcasm_cue_score, 0.40 * sarcasm_ml_prob + 0.60 * rule_res.sarcasm_cue_score), 4)
+        elif sarcasm_ml_prob >= 0.85:
+            # High confidence transformer irony on non-pure text
+            sarcasm_prob = round(sarcasm_ml_prob, 4)
         else:
-            sarcasm_prob = round(max(sarcasm_ml_prob, 0.75 * sarcasm_ml_prob + 0.25 * rule_res.sarcasm_cue_score), 4)
+            sarcasm_prob = round(sarcasm_ml_prob * 0.40, 4)
     else:
         sarcasm_prob = round(rule_res.sarcasm_cue_score, 4)
 
@@ -76,22 +96,30 @@ def fuse_signals(
     # When sarcasm is detected, discount false superficial "joy"/"surprise"/"neutral" and elevate anger/disgust.
     if is_sarcastic:
         shift_amount = 0.0
-        if blended.get("joy", 0.0) > 0.15:
-            joy_pen = blended["joy"] * min(sarcasm_prob, 0.90)
+        if blended.get("joy", 0.0) > 0.10:
+            joy_pen = blended["joy"] * min(sarcasm_prob, 0.95)
             blended["joy"] -= joy_pen
             shift_amount += joy_pen
-        if blended.get("surprise", 0.0) > 0.20 and (rule_res.sarcasm_cue_score >= 0.40 or rule_res.contrast_markers_detected):
-            surp_pen = blended["surprise"] * 0.70 * sarcasm_prob
+        if blended.get("surprise", 0.0) > 0.15:
+            surp_pen = blended["surprise"] * min(sarcasm_prob, 0.85)
             blended["surprise"] -= surp_pen
             shift_amount += surp_pen
-        if blended.get("neutral", 0.0) > 0.35:
-            neut_pen = blended["neutral"] * min(sarcasm_prob, 0.75)
+        if blended.get("neutral", 0.0) > 0.25:
+            neut_pen = blended["neutral"] * min(sarcasm_prob, 0.80)
             blended["neutral"] -= neut_pen
             shift_amount += neut_pen
+        if blended.get("fear", 0.0) > 0.35 and ml_dist.get("fear", 0.0) > 0.60:
+            fear_pen = blended["fear"] * 0.75 * sarcasm_prob
+            blended["fear"] -= fear_pen
+            shift_amount += fear_pen
 
         if shift_amount > 0:
-            blended["anger"] = blended.get("anger", 0.0) + (shift_amount * 0.70)
-            blended["disgust"] = blended.get("disgust", 0.0) + (shift_amount * 0.30)
+            if any(cue in rule_res.cues for cue in ["adversity:puddle", "adversity:odor", "adversity:stench", "adversity:spill", "adversity:spoiled", "adversity:dirty", "adversity:clothes", "adversity:burst", "adversity:curdled"]):
+                blended["disgust"] = blended.get("disgust", 0.0) + (shift_amount * 0.70)
+                blended["anger"] = blended.get("anger", 0.0) + (shift_amount * 0.30)
+            else:
+                blended["anger"] = blended.get("anger", 0.0) + (shift_amount * 0.75)
+                blended["disgust"] = blended.get("disgust", 0.0) + (shift_amount * 0.25)
 
     total = sum(blended.values())
     if total > 0:

@@ -55,21 +55,27 @@ SARCASM_MARKERS = [
     "what an absolute joy", "such a joy", "such a pleasure",
     "couldn't be better", "could not be better",
 ]
-NEGATIVE_CONTEXT = {
-    "delay", "delayed", "delays", "late", "broke", "broken", "lost", "fail", "failed", "fails",
-    "crash", "crashes", "crashed", "crashing", "bug", "bugs", "ruin", "ruined", "ruins",
-    "tire", "flat", "traffic", "cancel", "canceled", "cancelled", "canceling",
-    "pain", "hurt", "freeze", "freezes", "frozen", "support", "hold", "wait", "waiting", "waited",
-    "hours", "disaster", "nightmare", "hell", "mess", "headache", "stuck", "terrible", "awful", "horrible",
-    "puddle", "dropped", "drop", "spill", "spilled", "freezing", "cold shower", "5 am", "monday", "alarm", "dentist",
-}
-POSITIVE_WORDS = {
-    "great", "wonderful", "fantastic", "love", "nice", "perfect",
-    "amazing", "brilliant", "fun", "genius", "awesome", "lovely", "delightful",
-    "highlight", "favorite", "favourite", "best", "treat", "pleasure", "thrilled", "joy",
-    "luxury", "bliss",
+ADVERSITY_DOMAINS = {
+    # Transit & travel disruptions
+    "diverted", "divert", "delayed", "delay", "delays", "stranded", "cancelled", "cancel", "stuck", "towed",
+    # Tech & systems failures
+    "crashed", "crashes", "crash", "crashing", "bug", "bugs", "glitch", "glitches", "error", "errors",
+    "frozen", "freeze", "freezes", "jammed", "jam", "burst", "bursts", "corrupt", "corrupted",
+    # Physical mishaps, unpleasantness & weather
+    "puddle", "puddles", "spill", "spilled", "spills", "spilling", "thunderstorm", "overtime",
+    "odor", "stench", "spoiled", "spoiling", "rotten", "stolen", "broke", "broken",
+    "damage", "damaged", "ruin", "ruined", "ruins", "dead",
 }
 
+PRAISE_TOKENS = {
+    "great", "wonderful", "fantastic", "love", "nice", "perfect", "amazing", "brilliant",
+    "awesome", "lovely", "delightful", "highlight", "favorite", "favourite", "best", "treat",
+    "pleasure", "pure", "luxury", "bliss", "genius", "world-class", "helpful", "glad", "super",
+    "riveting", "masterclass", "masterful", "paradise", "adore", "thrilled", "plan", "to-do", "todo",
+}
+
+NEGATIVE_CONTEXT = ADVERSITY_DOMAINS
+POSITIVE_WORDS = PRAISE_TOKENS
 
 
 class RuleCues:
@@ -79,11 +85,17 @@ class RuleCues:
         sarcasm_cue_score: float = 0.0,
         cues: list[str] | None = None,
         emotion_hints: dict[str, float] | None = None,
+        has_praise_token: bool = False,
+        has_adversity_token: bool = False,
+        has_ironic_punct: bool = False,
     ):
         raw_hints = emotion_hint if emotion_hint is not None else (emotion_hints or {})
         self.emotion_hint = {l: float(raw_hints.get(l, 0.0)) for l in EMOTION_LABELS}
         self.sarcasm_cue_score = float(sarcasm_cue_score)
         self.cues = cues or []
+        self.has_praise_token = has_praise_token
+        self.has_adversity_token = has_adversity_token
+        self.has_ironic_punct = has_ironic_punct
 
     @property
     def emotion_hints(self) -> dict[str, float]:
@@ -91,11 +103,11 @@ class RuleCues:
 
     @property
     def contrast_markers_detected(self) -> bool:
-        return any("contrast" in c or "marker" in c for c in self.cues)
+        return any("contrast" in c or "marker" in c for c in self.cues) or (self.has_praise_token and self.has_adversity_token)
 
     @property
     def ellipsis_detected(self) -> bool:
-        return any("ellipsis" in c for c in self.cues)
+        return any("ellipsis" in c for c in self.cues) or self.has_ironic_punct
 
     @property
     def quote_markers_detected(self) -> bool:
@@ -160,11 +172,14 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
             sar += 0.50
             cues.append(f"marker:{marker}")
 
-    has_pos = bool(tokens & POSITIVE_WORDS) or any(pw in lower for pw in POSITIVE_WORDS)
-    has_neg_ctx = bool(tokens & NEGATIVE_CONTEXT) or any(nw in lower for nw in NEGATIVE_CONTEXT)
+    has_pos = bool(tokens & PRAISE_TOKENS)
+    has_neg_ctx = bool(tokens & ADVERSITY_DOMAINS)
     if has_pos and has_neg_ctx:
         sar += 0.50
         cues.append("contrast:positive_praise_with_negative_context")
+
+    for ad in (tokens & ADVERSITY_DOMAINS):
+        cues.append(f"adversity:{ad}")
 
     if pre.exclaim_count >= 2:
         sar += 0.10
@@ -178,13 +193,15 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
     if pre.caps_words:
         sar += 0.10
         cues.append(f"caps:{','.join(pre.caps_words[:3])}")
-    if pre.has_negation and (tokens & POSITIVE_WORDS):
+    if pre.has_negation and (tokens & PRAISE_TOKENS):
         sar += 0.30
         cues.append("contrast:negation+positive")
     for name in pre.emoji_names:
         if any(s in name for s in SARCASM_EMOJI):
             sar += 0.50
             cues.append(f"emoji-sarcasm:{name}")
+
+    has_ironic_punct = bool(pre.ellipsis or ("?!" in pre.raw) or ("!?" in pre.raw) or ('"' in pre.raw) or ("“" in pre.raw))
 
     # If strong sarcasm cues detected, shift the rule hint from literal praise to anger/disgust
     if sar >= 0.50 or (has_pos and has_neg_ctx):
@@ -194,5 +211,12 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
         if "surprise" in scores:
             scores["surprise"] = max(0.0, scores["surprise"] - 1.2)
 
-    return RuleCues(emotion_hint=_normalise(scores), sarcasm_cue_score=min(sar, 1.0), cues=cues)
+    return RuleCues(
+        emotion_hint=_normalise(scores),
+        sarcasm_cue_score=min(sar, 1.0),
+        cues=cues,
+        has_praise_token=has_pos,
+        has_adversity_token=has_neg_ctx,
+        has_ironic_punct=has_ironic_punct,
+    )
 
