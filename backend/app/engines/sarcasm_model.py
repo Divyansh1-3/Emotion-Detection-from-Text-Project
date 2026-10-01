@@ -42,6 +42,7 @@ def _load_pipeline(model_name: str):
 def predict_sarcasm(text: str) -> tuple[float, str]:
     """Return (sarcasm_probability, backend: 'transformer'|'heuristic')."""
     settings = get_settings()
+    rule_score = round(analyze_rules(text).sarcasm_cue_score, 4)
     if settings.use_models:
         pipe = _load_pipeline(settings.sarcasm_model)
         if pipe is not None:
@@ -50,11 +51,16 @@ def predict_sarcasm(text: str) -> tuple[float, str]:
                 row = out[0] if isinstance(out, list) else out
                 label = str(row["label"]).lower()
                 score = float(row["score"])
-                prob = score if label in _SARCASTIC_LABELS else (1.0 - score)
-                return round(max(0.0, min(1.0, prob)), 4), "transformer"
+                ml_prob = score if label in _SARCASTIC_LABELS else (1.0 - score)
+                # If conversational cues detect strong irony, give them priority
+                if rule_score >= 0.40:
+                    combined = max(rule_score, 0.30 * ml_prob + 0.70 * rule_score)
+                else:
+                    combined = 0.60 * ml_prob + 0.40 * rule_score
+                return round(max(0.0, min(1.0, combined)), 4), "transformer"
             except Exception:
                 pass
-    return round(analyze_rules(text).sarcasm_cue_score, 4), "heuristic"
+    return rule_score, "heuristic"
 
 
 def is_model_loaded() -> bool:

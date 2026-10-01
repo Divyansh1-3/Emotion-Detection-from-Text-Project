@@ -44,15 +44,24 @@ SARCASM_MARKERS = [
     "thanks a lot", "so much fun", "love that for me", "as if", "sure sure",
     "big surprise", "what a surprise", "said no one", "oh joy", "well done genius",
     "can't wait", "cant wait", "wow just wow", "obviously",
+    "oh fantastic", "oh brilliant", "oh lovely", "oh perfect", "oh super",
+    "just what i needed", "just what i wanted", "just how i wanted", "just what we needed",
+    "love it when", "love when", "truly the highlight", "highlight of my week",
+    "highlight of my day", "highlight of the day", "thanks for nothing",
+    "my favorite", "my favourite", "couldn't be happier", "could not be happier",
+    "what a treat", "what a pleasure",
 ]
 NEGATIVE_CONTEXT = {
-    "delay", "delayed", "delays", "late", "broke", "broken", "lost", "fail", "failed",
-    "crash", "crashed", "bug", "ruin", "ruined", "tire", "traffic", "cancel", "canceled",
-    "cancelled", "pain", "hurt", "freeze", "freezing", "support", "hold", "wait", "waiting"
+    "delay", "delayed", "delays", "late", "broke", "broken", "lost", "fail", "failed", "fails",
+    "crash", "crashes", "crashed", "crashing", "bug", "bugs", "ruin", "ruined", "ruins",
+    "tire", "flat", "traffic", "cancel", "canceled", "cancelled", "canceling",
+    "pain", "hurt", "freeze", "freezes", "frozen", "support", "hold", "wait", "waiting", "waited",
+    "hours", "disaster", "nightmare", "hell", "mess", "headache", "stuck", "terrible", "awful", "horrible"
 }
 POSITIVE_WORDS = {
     "great", "wonderful", "fantastic", "love", "nice", "perfect",
-    "amazing", "brilliant", "fun", "genius", "awesome", "lovely", "delightful"
+    "amazing", "brilliant", "fun", "genius", "awesome", "lovely", "delightful",
+    "highlight", "favorite", "favourite", "best", "treat", "pleasure", "thrilled", "joy"
 }
 
 
@@ -142,13 +151,13 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
     sar = 0.0
     for marker in SARCASM_MARKERS:
         if marker in lower:
-            sar += 0.25
+            sar += 0.50
             cues.append(f"marker:{marker}")
 
     has_pos = bool(tokens & POSITIVE_WORDS) or any(pw in lower for pw in POSITIVE_WORDS)
     has_neg_ctx = bool(tokens & NEGATIVE_CONTEXT) or any(nw in lower for nw in NEGATIVE_CONTEXT)
     if has_pos and has_neg_ctx:
-        sar += 0.35
+        sar += 0.50
         cues.append("contrast:positive_praise_with_negative_context")
 
     if pre.exclaim_count >= 2:
@@ -164,12 +173,20 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
         sar += 0.10
         cues.append(f"caps:{','.join(pre.caps_words[:3])}")
     if pre.has_negation and (tokens & POSITIVE_WORDS):
-        sar += 0.25
+        sar += 0.30
         cues.append("contrast:negation+positive")
     for name in pre.emoji_names:
         if any(s in name for s in SARCASM_EMOJI):
-            sar += 0.40
+            sar += 0.50
             cues.append(f"emoji-sarcasm:{name}")
+
+    # If strong sarcasm cues detected, shift the rule hint from literal praise to anger/disgust
+    if sar >= 0.50 or (has_pos and has_neg_ctx):
+        scores["anger"] += 1.8
+        scores["disgust"] += 0.9
+        scores["joy"] = 0.0
+        if "surprise" in scores:
+            scores["surprise"] = max(0.0, scores["surprise"] - 1.2)
 
     return RuleCues(emotion_hint=_normalise(scores), sarcasm_cue_score=min(sar, 1.0), cues=cues)
 

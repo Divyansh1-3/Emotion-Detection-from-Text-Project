@@ -60,6 +60,34 @@ def fuse_signals(
         score = (w_ml * p_ml) + (w_rule * p_rule) + (w_knn * p_knn)
         blended[label] = score
 
+    # Sarcasm signal fusion
+    if rule_res.sarcasm_cue_score >= 0.40:
+        sarcasm_prob = round(max(rule_res.sarcasm_cue_score, 0.35 * sarcasm_ml_prob + 0.65 * rule_res.sarcasm_cue_score), 4)
+    elif ml_backend == "transformer":
+        sarcasm_prob = round(0.50 * sarcasm_ml_prob + 0.50 * rule_res.sarcasm_cue_score, 4)
+    else:
+        sarcasm_prob = round(rule_res.sarcasm_cue_score, 4)
+
+    is_sarcastic = sarcasm_prob >= settings.sarcasm_threshold
+
+    # EMOTION CORRECTION FOR SARCASM
+    # Sarcasm uses positive/ironic words (Joy/Surprise) to mask Anger, Frustration, or Disgust.
+    # When sarcasm is detected, discount false superficial "joy"/"surprise" and elevate anger/disgust.
+    if is_sarcastic:
+        shift_amount = 0.0
+        if blended.get("joy", 0.0) > 0.15:
+            joy_pen = blended["joy"] * min(sarcasm_prob, 0.90)
+            blended["joy"] -= joy_pen
+            shift_amount += joy_pen
+        if blended.get("surprise", 0.0) > 0.20 and (rule_res.sarcasm_cue_score >= 0.40 or rule_res.contrast_markers_detected):
+            surp_pen = blended["surprise"] * 0.70 * sarcasm_prob
+            blended["surprise"] -= surp_pen
+            shift_amount += surp_pen
+
+        if shift_amount > 0:
+            blended["anger"] = blended.get("anger", 0.0) + (shift_amount * 0.75)
+            blended["disgust"] = blended.get("disgust", 0.0) + (shift_amount * 0.25)
+
     total = sum(blended.values())
     if total > 0:
         normalized = {k: round(v / total, 4) for k, v in blended.items()}
@@ -80,15 +108,6 @@ def fuse_signals(
         threshold=settings.uncertain_threshold,
         min_margin=0.10,
     )
-
-    # Sarcasm signal fusion
-    # If ML model ran, weight it 70% and rule cues 30%, else rule cues 100%
-    if ml_backend == "transformer":
-        sarcasm_prob = round(0.70 * sarcasm_ml_prob + 0.30 * rule_res.sarcasm_cue_score, 4)
-    else:
-        sarcasm_prob = round(rule_res.sarcasm_cue_score, 4)
-
-    is_sarcastic = sarcasm_prob >= settings.sarcasm_threshold
 
     warnings = []
     if uncertain:
