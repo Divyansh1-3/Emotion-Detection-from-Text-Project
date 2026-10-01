@@ -16,6 +16,8 @@ import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
+from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
 
 NAVY_HEX = "1B365D"
 SLATE_HEX = "4B6B94"
@@ -27,8 +29,28 @@ DARK_GRAY = RGBColor(0x2B, 0x2D, 0x42)
 MUTED = RGBColor(0x7A, 0x82, 0x90)
 
 
+def remove_table_borders(table):
+    """Remove all visual borders from a Word table to render content seamlessly."""
+    tblPr = table._tbl.tblPr
+    tblBorders = tblPr.first_child_found_in("w:tblBorders")
+    if tblBorders is not None:
+        tblPr.remove(tblBorders)
+    new_borders = parse_xml(
+        f'<w:tblBorders {nsdecls("w")}>'
+        f'<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'</w:tblBorders>'
+    )
+    tblPr.append(new_borders)
+
+
 def populate_template(template_path: str, output_path: str):
     doc = docx.Document(template_path)
+    docs_dir = Path(__file__).resolve().parent.parent / "docs"
 
     # 1. Update Paragraphs
     for p in doc.paragraphs:
@@ -239,6 +261,29 @@ def populate_template(template_path: str, output_path: str):
                 r.font.size = Pt(10)
                 r.font.color.rgb = DARK_GRAY
 
+        elif "The project is structured as a self-contained multi-tier system" in txt:
+            p.text = (
+                "The project is structured as a self-contained multi-tier system (comprising a presentation layer, "
+                "an application/API routing tier, a hybrid AI engine tier, and an embedded persistence backend), as illustrated "
+                "in Figure 2.1. It interfaces with external services (such as the Google Gemini API or Hugging Face Model Hub) "
+                "strictly through secure, authenticated RESTful endpoints with full offline deterministic fallback resilience."
+            )
+            for r in p.runs:
+                r.font.name = "Arial"
+                r.font.size = Pt(10)
+                r.font.color.rgb = DARK_GRAY
+
+        elif "The interface will follow standard UX usability best practices" in txt:
+            p.text = (
+                "The interface follows standard UX usability best practices (clean top navigation bar, intuitive dual-pane layout, "
+                "and immediate visual feedback). All interactive controls provide real-time validation, color-coded emotion badges, "
+                "posterior probability distribution bars, and route telemetry strips, as illustrated in the interface architecture wireframe in Figure 4.1."
+            )
+            for r in p.runs:
+                r.font.name = "Arial"
+                r.font.size = Pt(10)
+                r.font.color.rgb = DARK_GRAY
+
     # 2. Update Table 0 (Metadata)
     t0 = doc.tables[0]
     t0.rows[0].cells[0].paragraphs[0].text = (
@@ -330,41 +375,45 @@ def populate_template(template_path: str, output_path: str):
                     r.font.size = Pt(9)
                     r.font.color.rgb = DARK_GRAY
 
-    # 6. Update Table 4 (System Context Diagram)
+    # 6. Update Table 4 (System Context Diagram -> Product Architecture Flowchart)
     t4 = doc.tables[4]
-    t4.rows[0].cells[0].paragraphs[0].text = (
-        "+-----------------------------------------------------------------------------------------+\n"
-        "|                             SYSTEM CONTEXT ARCHITECTURE                                 |\n"
-        "+-----------------------------------------------------------------------------------------+\n"
-        "|  [ End User / CX Lead ]        [ Automated REST Client ]       [ Compliance Auditor ]   |\n"
-        "|             |                              |                              |             |\n"
-        "|             v                              v                              v             |\n"
-        "|  +-----------------------------------------------------------------------------------+  |\n"
-        "|  |                      PRESENTATION & API GATEWAY (Flask 3.0)                       |  |\n"
-        "|  |     GET / (Dashboard)    POST /process    POST /batch    GET /inspect (Auditor)   |  |\n"
-        "|  +-----------------------------------------------------------------------------------+  |\n"
-        "|                                            |                                            |\n"
-        "|                                            v                                            |\n"
-        "|  +-----------------------------------------------------------------------------------+  |\n"
-        "|  |                               HYBRID AI CORE ENGINE                               |  |\n"
-        "|  |  [Input Validator] -> [Preprocessor] -> [Parallel Extraction: Rules, Models, RAG]  |  |\n"
-        "|  |  [DistilRoBERTa 7-Class Emotion]  +  [cardiffnlp/twitter-roberta-base-irony]       |  |\n"
-        "|  |  -> [Mathematical Signal Fusion (70/15/15) + Incongruity Calibration + Purity Guard] |\n"
-        "|  |  -> [Bounded Gemini LLM Rationale Synthesis with Offline Template Fallback]       |  |\n"
-        "|  |  -> [Output Safety Shield & Clinical Redactor]                                    |  |\n"
-        "|  +-----------------------------------------------------------------------------------+  |\n"
-        "|                                            |                                            |\n"
-        "|                                            v                                            |\n"
-        "|  +-----------------------------------------------------------------------------------+  |\n"
-        "|  |                              STORAGE & KNOWLEDGE BASE                             |  |\n"
-        "|  |      SQLite3 (emotion.sqlite3)       exemplars.jsonl       emotions.jsonl         |  |\n"
-        "|  +-----------------------------------------------------------------------------------+  |\n"
-        "+-----------------------------------------------------------------------------------------+"
+    remove_table_borders(t4)
+    cell4 = t4.rows[0].cells[0]
+    cell4.text = ""
+
+    img_flowchart = str(docs_dir / "p098_product_architecture_flowchart.png")
+
+    p_img4 = cell4.paragraphs[0]
+    p_img4.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_img4.paragraph_format.space_before = Pt(4)
+    p_img4.paragraph_format.space_after = Pt(4)
+    p_img4.paragraph_format.keep_with_next = True
+    if os.path.exists(img_flowchart):
+        r_img4 = p_img4.add_run()
+        r_img4.add_picture(img_flowchart, width=Inches(6.2))
+
+    p_cap4 = cell4.add_paragraph()
+    p_cap4.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_cap4.paragraph_format.space_before = Pt(4)
+    p_cap4.paragraph_format.space_after = Pt(6)
+    p_cap4.paragraph_format.line_spacing = 1.15
+    r_cap4_title = p_cap4.add_run("Figure 2.1: High-Level Product Architecture of P_098 Emotion Detection System\n")
+    r_cap4_title.font.name = "Arial"
+    r_cap4_title.font.size = Pt(9.5)
+    r_cap4_title.font.bold = True
+    r_cap4_title.font.color.rgb = SLATE
+
+    r_cap4_desc = p_cap4.add_run(
+        "End-to-end multi-tier pipeline showing Web Dashboard input, Flask 3.0 API Gateway & Router, "
+        "five parallel extraction engines (DistilRoBERTa 7-Class Emotion, Twitter-RoBERTa-Irony, Lexical/Rule Engine, "
+        "Semantic Vector RAG, and SQLite 3 persistence), Mathematical Signal Fusion Layer (70/15/15) with "
+        "Affective Purity Guards & Contextual Incongruity Calibration, Bounded Gemini LLM Rationale Synthesis, "
+        "and calibrated prediction return loop."
     )
-    for r in t4.rows[0].cells[0].paragraphs[0].runs:
-        r.font.name = "Consolas"
-        r.font.size = Pt(8)
-        r.font.color.rgb = DARK_GRAY
+    r_cap4_desc.font.name = "Arial"
+    r_cap4_desc.font.size = Pt(8.5)
+    r_cap4_desc.font.italic = True
+    r_cap4_desc.font.color.rgb = MUTED
 
     # 7. Update Table 5 (User Classes)
     t5 = doc.tables[5]
@@ -464,30 +513,44 @@ def populate_template(template_path: str, output_path: str):
                 r.font.size = Pt(9)
                 r.font.color.rgb = DARK_GRAY
 
-    # 11. Update Table 9 (UI Mockup)
+    # 11. Update Table 9 (UI Mockup -> Dual-Pane Wireframe Architecture Diagram)
     t9 = doc.tables[9]
-    t9.rows[0].cells[0].paragraphs[0].text = (
-        "+-----------------------------------------------------------------------------------------+\n"
-        "|  P_098 Emotion Detection  |  HCL Training  |  Divyansh Yadav      [Dashboard]  [Inspect]    |\n"
-        "+-----------------------------------------------------------------------------------------+\n"
-        "|  INPUT ANALYSIS                                   |  PIPELINE OUTPUT                    |\n"
-        "|  Enter text:                                      |  Primary Emotion:  [ 😢 Sadness ]   |\n"
-        "|  [ It was a bad day for me                     ]  |  Confidence:       [ 94.9% ]        |\n"
-        "|                                                   |  Sarcasm Alert:    [ None (0.02) ]  |\n"
-        "|  Presets: [Joy] [Sarcasm] [Frustration] [Uncertain|  Probability Distribution:           |\n"
-        "|                                                   |  Sadness  ==================== 94.9%|\n"
-        "|  [  ANALYZE EMOTION  ]                            |  Fear     = 2.5%                    |\n"
-        "|                                                   |  Joy      < 0.5%                    |\n"
-        "|  -----------------------------------------------  |  ---------------------------------  |\n"
-        "|  BATCH CSV ANALYSIS                               |  Grounded Explanation:              |\n"
-        "|  [Choose CSV File]  [Run Batch Analysis]          |  \"The text directly conveys gloom   |\n"
-        "|                                                   |   and distress via 'bad day'...'    |\n"
-        "+-----------------------------------------------------------------------------------------+"
+    remove_table_borders(t9)
+    cell9 = t9.rows[0].cells[0]
+    cell9.text = ""
+
+    img_ui = str(docs_dir / "p098_ui_wireframe_diagram.png")
+
+    p_img9 = cell9.paragraphs[0]
+    p_img9.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_img9.paragraph_format.space_before = Pt(4)
+    p_img9.paragraph_format.space_after = Pt(4)
+    p_img9.paragraph_format.keep_with_next = True
+    if os.path.exists(img_ui):
+        r_img9 = p_img9.add_run()
+        r_img9.add_picture(img_ui, width=Inches(6.2))
+
+    p_cap9 = cell9.add_paragraph()
+    p_cap9.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_cap9.paragraph_format.space_before = Pt(4)
+    p_cap9.paragraph_format.space_after = Pt(6)
+    p_cap9.paragraph_format.line_spacing = 1.15
+    r_cap9_title = p_cap9.add_run("Figure 4.1: Interactive Operator Dashboard and Pipeline Output Interface Architecture\n")
+    r_cap9_title.font.name = "Arial"
+    r_cap9_title.font.size = Pt(9.5)
+    r_cap9_title.font.bold = True
+    r_cap9_title.font.color.rgb = SLATE
+
+    r_cap9_desc = p_cap9.add_run(
+        "Production dual-pane user interface layout: Left Panel provides interactive utterance input, "
+        "one-click sentiment presets, and CSV batch ingestion drop-zone; Right Panel displays primary emotion badge, "
+        "sarcasm/irony intensity alert, 7-class posterior probability distribution bars, evidence-grounded rationale "
+        "with RAG knowledge citations, and real-time execution route telemetry."
     )
-    for r in t9.rows[0].cells[0].paragraphs[0].runs:
-        r.font.name = "Consolas"
-        r.font.size = Pt(8)
-        r.font.color.rgb = DARK_GRAY
+    r_cap9_desc.font.name = "Arial"
+    r_cap9_desc.font.size = Pt(8.5)
+    r_cap9_desc.font.italic = True
+    r_cap9_desc.font.color.rgb = MUTED
 
     # 12. Update Table 10 (NFRs)
     t10 = doc.tables[10]
