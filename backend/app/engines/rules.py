@@ -50,18 +50,24 @@ SARCASM_MARKERS = [
     "highlight of my day", "highlight of the day", "thanks for nothing",
     "my favorite", "my favourite", "couldn't be happier", "could not be happier",
     "what a treat", "what a pleasure",
+    "on my to-do list", "on my todo list", "nothing beats", "pure luxury",
+    "pure bliss", "pure joy", "living the dream", "my lucky day",
+    "what an absolute joy", "such a joy", "such a pleasure",
+    "couldn't be better", "could not be better",
 ]
 NEGATIVE_CONTEXT = {
     "delay", "delayed", "delays", "late", "broke", "broken", "lost", "fail", "failed", "fails",
     "crash", "crashes", "crashed", "crashing", "bug", "bugs", "ruin", "ruined", "ruins",
     "tire", "flat", "traffic", "cancel", "canceled", "cancelled", "canceling",
     "pain", "hurt", "freeze", "freezes", "frozen", "support", "hold", "wait", "waiting", "waited",
-    "hours", "disaster", "nightmare", "hell", "mess", "headache", "stuck", "terrible", "awful", "horrible"
+    "hours", "disaster", "nightmare", "hell", "mess", "headache", "stuck", "terrible", "awful", "horrible",
+    "puddle", "dropped", "drop", "spill", "spilled", "freezing", "cold shower", "5 am", "monday", "alarm", "dentist",
 }
 POSITIVE_WORDS = {
     "great", "wonderful", "fantastic", "love", "nice", "perfect",
     "amazing", "brilliant", "fun", "genius", "awesome", "lovely", "delightful",
-    "highlight", "favorite", "favourite", "best", "treat", "pleasure", "thrilled", "joy"
+    "highlight", "favorite", "favourite", "best", "treat", "pleasure", "thrilled", "joy",
+    "luxury", "bliss",
 }
 
 

@@ -1,24 +1,82 @@
-{"id": "ex_001", "label": "joy", "source": "exemplar", "text": "I just received the promotion I worked towards for two full years! Celebrating tonight!"}
-{"id": "ex_002", "label": "joy", "source": "exemplar", "text": "Such wonderful news, congratulations to everyone on the winning team!"}
-{"id": "ex_003", "label": "joy", "source": "exemplar", "text": "Today has been the happiest day of my entire life, everything went perfectly."}
-{"id": "ex_004", "label": "anger", "source": "exemplar", "text": "This service is completely unacceptable. You charged my card three times and refused a refund!"}
-{"id": "ex_005", "label": "anger", "source": "exemplar", "text": "I am so sick and tired of these blatant lies from management. Enough is enough."}
-{"id": "ex_006", "label": "anger", "source": "exemplar", "text": "Are you kidding me right now?! You ruined the entire presentation!"}
-{"id": "ex_007", "label": "sadness", "source": "exemplar", "text": "My beloved dog passed away peacefully this morning after 14 faithful years. My heart hurts."}
-{"id": "ex_008", "label": "sadness", "source": "exemplar", "text": "Feeling utterly lonely and forgotten lately. Nobody checks in on me anymore."}
-{"id": "ex_009", "label": "sadness", "source": "exemplar", "text": "It hurts so much knowing we will never get that time back together."}
-{"id": "ex_010", "label": "fear", "source": "exemplar", "text": "I heard loud footsteps outside my bedroom door in the dark and I am terrified to move."}
-{"id": "ex_011", "label": "fear", "source": "exemplar", "text": "The test results come back tomorrow and my hands won't stop trembling from anxiety."}
-{"id": "ex_012", "label": "fear", "source": "exemplar", "text": "Panic hit me as soon as the emergency siren started blaring through the tunnel."}
-{"id": "ex_013", "label": "surprise", "source": "exemplar", "text": "Wait, what?! I had no idea you were secretly planning a surprise party for me!"}
-{"id": "ex_014", "label": "surprise", "source": "exemplar", "text": "Unbelievable! We actually bumped into our childhood neighbor in the middle of Tokyo!"}
-{"id": "ex_015", "label": "surprise", "source": "exemplar", "text": "I was genuinely stunned when they announced my name on the loudspeaker."}
-{"id": "ex_016", "label": "disgust", "source": "exemplar", "text": "The food tasted spoiled and mold was visibly spreading under the bread. Absolutely revolting."}
-{"id": "ex_017", "label": "disgust", "source": "exemplar", "text": "His corrupt behavior and lack of any remorse is completely sickening to watch."}
-{"id": "ex_018", "label": "disgust", "source": "exemplar", "text": "The public bathroom was filthy and reeked of sewage. Disgusting."}
-{"id": "ex_019", "label": "neutral", "source": "exemplar", "text": "The scheduled quarterly review will take place on Thursday at 2:00 PM in Conference Room B."}
-{"id": "ex_020", "label": "neutral", "source": "exemplar", "text": "The train departs every twenty minutes from Platform 4 toward Central Station."}
-{"id": "ex_021", "label": "neutral", "source": "exemplar", "text": "The standard installation package includes two cables, an adapter, and an instruction booklet."}
-{"id": "ex_022", "label": "anger", "source": "exemplar", "text": "Oh fantastic, another delayed flight. Exactly what I wanted after a 12 hour workday."}
-{"id": "ex_023", "label": "disgust", "source": "exemplar", "text": "Great job guys, you broke production on a Friday evening again. Pure genius."}
-{"id": "ex_024", "label": "sadness", "source": "exemplar", "text": "I failed the driving test for the third consecutive time. So demoralized."}
+{"id": "ex_joy_01", "label": "joy", "source": "exemplar", "text": "I just received the promotion I worked towards for two full years! Celebrating tonight with friends!"}
+{"id": "ex_joy_02", "label": "joy", "source": "exemplar", "text": "Such wonderful news, congratulations to everyone on the winning team! You all deserved this!"}
+{"id": "ex_joy_03", "label": "joy", "source": "exemplar", "text": "Today has been the happiest day of my entire life, everything went so wonderfully and smoothly."}
+{"id": "ex_joy_04", "label": "joy", "source": "exemplar", "text": "I passed my final board exams with highest honors! I am so incredibly thrilled and grateful!"}
+{"id": "ex_joy_05", "label": "joy", "source": "exemplar", "text": "Welcoming our healthy baby daughter into the world today. My heart is completely overflowing with love."}
+{"id": "ex_joy_06", "label": "joy", "source": "exemplar", "text": "We adopted the sweetest rescue puppy this morning and he won't stop cuddling with us."}
+{"id": "ex_joy_07", "label": "joy", "source": "exemplar", "text": "Sunny weather, great music, and good company at the park. Life is truly beautiful today."}
+{"id": "ex_joy_08", "label": "joy", "source": "exemplar", "text": "Our research paper just got accepted into the top conference! Hard work finally paid off!"}
+{"id": "ex_joy_09", "label": "joy", "source": "exemplar", "text": "Reuniting with my childhood best friends after five long years apart was absolute magic."}
+{"id": "ex_joy_10", "label": "joy", "source": "exemplar", "text": "I am so proud of our students for putting together such an inspiring and uplifting performance."}
+{"id": "ex_ang_01", "label": "anger", "source": "exemplar", "text": "This service is completely unacceptable. You charged my card three times and refused to issue a refund!"}
+{"id": "ex_ang_02", "label": "anger", "source": "exemplar", "text": "I am so sick and tired of these blatant lies from management. Enough is enough, take accountability!"}
+{"id": "ex_ang_03", "label": "anger", "source": "exemplar", "text": "Are you kidding me right now?! You ruined the entire presentation by deleting the final slides!"}
+{"id": "ex_ang_04", "label": "anger", "source": "exemplar", "text": "Stop interrupting me and listen! You continuously dismiss everyone else's ideas in this department."}
+{"id": "ex_ang_05", "label": "anger", "source": "exemplar", "text": "I have been waiting on hold for two hours and your agent just hung up on me. Absolutely infuriating!"}
+{"id": "ex_ang_06", "label": "anger", "source": "exemplar", "text": "Somebody broke into my car overnight and stole my work laptop and backpack. I am so furious!"}
+{"id": "ex_ang_07", "label": "anger", "source": "exemplar", "text": "The contractor took our advance payment and completely vanished without doing any work. Criminal thieves!"}
+{"id": "ex_ang_08", "label": "anger", "source": "exemplar", "text": "How dare you spread false rumors about my personal life behind my back! Keep your mouth shut!"}
+{"id": "ex_ang_09", "label": "anger", "source": "exemplar", "text": "The landlord refuses to fix the broken heater in mid-winter while demanding rent increases. Unbearable!"}
+{"id": "ex_ang_10", "label": "anger", "source": "exemplar", "text": "Cheating on an open exam and dragging our entire study group down with you is unforgivable."}
+{"id": "ex_sad_01", "label": "sadness", "source": "exemplar", "text": "My beloved dog passed away peacefully this morning after 14 faithful years. My heart hurts deeply."}
+{"id": "ex_sad_02", "label": "sadness", "source": "exemplar", "text": "Feeling utterly lonely and forgotten lately. Nobody checks in on me and the silence is deafening."}
+{"id": "ex_sad_03", "label": "sadness", "source": "exemplar", "text": "It hurts so much knowing we will never get that time back together. I miss you every single day."}
+{"id": "ex_sad_04", "label": "sadness", "source": "exemplar", "text": "I was laid off today after dedicated years at the company. I feel hollow, devastated and hopeless."}
+{"id": "ex_sad_05", "label": "sadness", "source": "exemplar", "text": "Sitting alone in my dark apartment weeping quietly, wondering where everything went so wrong."}
+{"id": "ex_sad_06", "label": "sadness", "source": "exemplar", "text": "I failed the interview for my dream job after months of grueling preparation. Demoralized and drained."}
+{"id": "ex_sad_07", "label": "sadness", "source": "exemplar", "text": "Watching my grandfather's memory fade slowly due to Alzheimer's breaks my soul in pieces."}
+{"id": "ex_sad_08", "label": "sadness", "source": "exemplar", "text": "I poured my heart and soul into this project, and seeing it get cancelled is so painful."}
+{"id": "ex_sad_09", "label": "sadness", "source": "exemplar", "text": "The funeral service was beautiful, but coming back to an empty home feels impossible to bear."}
+{"id": "ex_sad_10", "label": "sadness", "source": "exemplar", "text": "Feeling completely disconnected from the world, like a shadow drifting through empty hallways."}
+{"id": "ex_fea_01", "label": "fear", "source": "exemplar", "text": "I heard loud aggressive footsteps right outside my bedroom door in the dark and I am terrified to move."}
+{"id": "ex_fea_02", "label": "fear", "source": "exemplar", "text": "The biopsy results come back tomorrow and my hands will not stop trembling from overwhelming dread."}
+{"id": "ex_fea_03", "label": "fear", "source": "exemplar", "text": "Panic hit me instantly as soon as the emergency sirens started blaring loudly through the subway tunnel."}
+{"id": "ex_fea_04", "label": "fear", "source": "exemplar", "text": "The severe turbulence shook the airplane so violently that oxygen masks dropped and passengers screamed."}
+{"id": "ex_fea_05", "label": "fear", "source": "exemplar", "text": "A hooded figure has been pacing back and forth outside my ground-floor window for the past thirty minutes."}
+{"id": "ex_fea_06", "label": "fear", "source": "exemplar", "text": "I am having severe chest tightness and trouble breathing, worried that something is critically wrong with my heart."}
+{"id": "ex_fea_07", "label": "fear", "source": "exemplar", "text": "The hurricane forecast was just upgraded to Category 5 and the evacuation route is completely jammed."}
+{"id": "ex_fea_08", "label": "fear", "source": "exemplar", "text": "Walking home alone down an unlit alleyway while someone is walking directly behind my footsteps."}
+{"id": "ex_sur_01", "label": "surprise", "source": "exemplar", "text": "Wait, what?! I had absolutely no idea you were secretly planning a surprise anniversary party for us!"}
+{"id": "ex_sur_02", "label": "surprise", "source": "exemplar", "text": "Unbelievable! We actually bumped into our childhood middle-school neighbor in the middle of a street in Tokyo!"}
+{"id": "ex_sur_03", "label": "surprise", "source": "exemplar", "text": "I was genuinely stunned when they called my name on the loudspeaker as the winner of the grand raffle!"}
+{"id": "ex_sur_04", "label": "surprise", "source": "exemplar", "text": "Whoa, look outside! It is snowing heavily in the middle of April in a subtropical city!"}
+{"id": "ex_sur_05", "label": "surprise", "source": "exemplar", "text": "My jaw dropped to the floor when my brother walked through the door after being deployed overseas for two years."}
+{"id": "ex_sur_06", "label": "surprise", "source": "exemplar", "text": "I opened the package expecting a small book and found a brand new laptop inside instead!"}
+{"id": "ex_sur_07", "label": "surprise", "source": "exemplar", "text": "No way, did that underdog team really just score two goals in the final thirty seconds to win the cup?!"}
+{"id": "ex_sur_08", "label": "surprise", "source": "exemplar", "text": "I turned the corner and found fifty of my colleagues standing quietly waiting to yell congratulations!"}
+{"id": "ex_dis_01", "label": "disgust", "source": "exemplar", "text": "The food tasted spoiled and rancid, and green mold was visibly spreading under the burger bun. Revolting!"}
+{"id": "ex_dis_02", "label": "disgust", "source": "exemplar", "text": "His corrupt behavior, predatory misconduct, and utter lack of remorse is completely sickening to watch."}
+{"id": "ex_dis_03", "label": "disgust", "source": "exemplar", "text": "The public restroom was filthy, covered in standing grime and reeked of raw sewage. So gross!"}
+{"id": "ex_dis_04", "label": "disgust", "source": "exemplar", "text": "Finding a dead hairy spider cooked into my soup bowl made me want to throw up on the spot."}
+{"id": "ex_dis_05", "label": "disgust", "source": "exemplar", "text": "The smell of rotting seafood and garbage baking under the sweltering afternoon sun was repulsive."}
+{"id": "ex_dis_06", "label": "disgust", "source": "exemplar", "text": "Watching executives pocket million-dollar bonuses while laying off thousand frontline staff is nauseating."}
+{"id": "ex_dis_07", "label": "disgust", "source": "exemplar", "text": "The milk in the carton was clumpy, curdled, and had a foul sour stench. Absolutely vile."}
+{"id": "ex_dis_08", "label": "disgust", "source": "exemplar", "text": "He openly spat on the subway floor right in front of elderly passengers. Utterly uncivilized and nasty."}
+{"id": "ex_neu_01", "label": "neutral", "source": "exemplar", "text": "The scheduled quarterly review will take place on Thursday at 2:00 PM in Conference Room B."}
+{"id": "ex_neu_02", "label": "neutral", "source": "exemplar", "text": "The commuter train departs every twenty minutes from Platform 4 toward Central Station."}
+{"id": "ex_neu_03", "label": "neutral", "source": "exemplar", "text": "The standard installation package includes two connection cables, a power adapter, and an instruction manual."}
+{"id": "ex_neu_04", "label": "neutral", "source": "exemplar", "text": "Water boils at 100 degrees Celsius and freezes at 0 degrees Celsius under standard atmospheric pressure."}
+{"id": "ex_neu_05", "label": "neutral", "source": "exemplar", "text": "The university library opens from Monday through Saturday between 8:30 AM and 8:00 PM."}
+{"id": "ex_neu_06", "label": "neutral", "source": "exemplar", "text": "Please attach the signed PDF document and submit it via the online portal by Friday evening."}
+{"id": "ex_neu_07", "label": "neutral", "source": "exemplar", "text": "The annual rainfall in the region was measured at approximately forty-two millimeters this season."}
+{"id": "ex_neu_08", "label": "neutral", "source": "exemplar", "text": "The system backup runs automatically every night at midnight to ensure data integrity."}
+{"id": "ex_sar_01", "label": "anger", "source": "exemplar", "text": "Oh fantastic, my flight is delayed by four hours. Just how I wanted to spend my entire afternoon."}
+{"id": "ex_sar_02", "label": "anger", "source": "exemplar", "text": "I love it when my computer crashes right before I save a three-hour report. Truly the highlight of my week."}
+{"id": "ex_sar_03", "label": "disgust", "source": "exemplar", "text": "Because dropping my phone directly into a dirty puddle was precisely on my to-do list today."}
+{"id": "ex_sar_04", "label": "anger", "source": "exemplar", "text": "Nothing beats waking up at 5 AM on a freezing Monday to a cold shower. Pure luxury and comfort."}
+{"id": "ex_sar_05", "label": "anger", "source": "exemplar", "text": "Oh wonderful, another mandatory meeting that could have easily been a one-line email. Absolutely riveting."}
+{"id": "ex_sar_06", "label": "anger", "source": "exemplar", "text": "Thanks a lot for eating the lunch I clearly labeled with my name in the fridge. True team player right there."}
+{"id": "ex_sar_07", "label": "anger", "source": "exemplar", "text": "What a delightful surprise, getting a flat tire in the pouring rain right on my way to a job interview."}
+{"id": "ex_sar_08", "label": "disgust", "source": "exemplar", "text": "I just love paying exorbitant rent for an apartment where the heater never works in the dead of winter. Paradise."}
+{"id": "ex_sar_09", "label": "anger", "source": "exemplar", "text": "Nothing like spending four hours at the DMV listening to broken elevator music. My absolute favorite hobby."}
+{"id": "ex_sar_10", "label": "anger", "source": "exemplar", "text": "Great job team, you managed to delete the entire production database right before the long weekend. Pure genius."}
+{"id": "ex_sar_11", "label": "disgust", "source": "exemplar", "text": "Truly a masterclass in software engineering, the application crashes immediately every single time you click save."}
+{"id": "ex_sar_12", "label": "anger", "source": "exemplar", "text": "Oh super, the train is stuck inside the dark tunnel with broken AC on a 95-degree summer afternoon. Just perfect."}
+{"id": "ex_sar_13", "label": "sadness", "source": "exemplar", "text": "Can't wait to spend my entire three-day weekend doing taxes and dental paperwork, sounds like an absolute blast."}
+{"id": "ex_sar_14", "label": "anger", "source": "exemplar", "text": "Love it when people reply to an urgent time-sensitive work email three weeks after the project deadline."}
+{"id": "ex_sar_15", "label": "disgust", "source": "exemplar", "text": "Precisely what I ordered, cold greasy soggy pizza and a warm melted milkshake delivered two hours late. Five stars."}
+{"id": "ex_sar_16", "label": "anger", "source": "exemplar", "text": "What a pleasure it is to be put on hold for two hours only to get abruptly hung up on. Stellar customer care."}
+{"id": "ex_sar_17", "label": "disgust", "source": "exemplar", "text": "Pure bliss, listening to loud car alarms blaring non-stop right outside my bedroom window at 3 AM."}
+{"id": "ex_sar_18", "label": "anger", "source": "exemplar", "text": "Love that for me, my alarm decided not to ring and I woke up thirty minutes after the final exam started."}
+{"id": "ex_sar_19", "label": "anger", "source": "exemplar", "text": "Nothing says relaxation quite like working twelve hours unpaid overtime on Sunday night. Living the dream."}
+{"id": "ex_sar_20", "label": "disgust", "source": "exemplar", "text": "Big surprise, the printer jammed again on the very first page after I replaced the entire ink cartridge. Amazing."}

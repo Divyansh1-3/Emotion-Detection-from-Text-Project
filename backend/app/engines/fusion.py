@@ -61,18 +61,19 @@ def fuse_signals(
         blended[label] = score
 
     # Sarcasm signal fusion
-    if rule_res.sarcasm_cue_score >= 0.40:
-        sarcasm_prob = round(max(rule_res.sarcasm_cue_score, 0.35 * sarcasm_ml_prob + 0.65 * rule_res.sarcasm_cue_score), 4)
-    elif ml_backend == "transformer":
-        sarcasm_prob = round(0.50 * sarcasm_ml_prob + 0.50 * rule_res.sarcasm_cue_score, 4)
+    if ml_backend == "transformer":
+        if rule_res.sarcasm_cue_score >= 0.40:
+            sarcasm_prob = round(max(rule_res.sarcasm_cue_score, 0.40 * sarcasm_ml_prob + 0.60 * rule_res.sarcasm_cue_score), 4)
+        else:
+            sarcasm_prob = round(max(sarcasm_ml_prob, 0.75 * sarcasm_ml_prob + 0.25 * rule_res.sarcasm_cue_score), 4)
     else:
         sarcasm_prob = round(rule_res.sarcasm_cue_score, 4)
 
     is_sarcastic = sarcasm_prob >= settings.sarcasm_threshold
 
     # EMOTION CORRECTION FOR SARCASM
-    # Sarcasm uses positive/ironic words (Joy/Surprise) to mask Anger, Frustration, or Disgust.
-    # When sarcasm is detected, discount false superficial "joy"/"surprise" and elevate anger/disgust.
+    # Sarcasm uses positive/ironic words (Joy/Surprise) or deadpan delivery (Neutral) to mask Anger or Disgust.
+    # When sarcasm is detected, discount false superficial "joy"/"surprise"/"neutral" and elevate anger/disgust.
     if is_sarcastic:
         shift_amount = 0.0
         if blended.get("joy", 0.0) > 0.15:
@@ -83,10 +84,14 @@ def fuse_signals(
             surp_pen = blended["surprise"] * 0.70 * sarcasm_prob
             blended["surprise"] -= surp_pen
             shift_amount += surp_pen
+        if blended.get("neutral", 0.0) > 0.35:
+            neut_pen = blended["neutral"] * min(sarcasm_prob, 0.75)
+            blended["neutral"] -= neut_pen
+            shift_amount += neut_pen
 
         if shift_amount > 0:
-            blended["anger"] = blended.get("anger", 0.0) + (shift_amount * 0.75)
-            blended["disgust"] = blended.get("disgust", 0.0) + (shift_amount * 0.25)
+            blended["anger"] = blended.get("anger", 0.0) + (shift_amount * 0.70)
+            blended["disgust"] = blended.get("disgust", 0.0) + (shift_amount * 0.30)
 
     total = sum(blended.values())
     if total > 0:

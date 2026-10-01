@@ -52,12 +52,7 @@ def predict_sarcasm(text: str) -> tuple[float, str]:
                 label = str(row["label"]).lower()
                 score = float(row["score"])
                 ml_prob = score if label in _SARCASTIC_LABELS else (1.0 - score)
-                # If conversational cues detect strong irony, give them priority
-                if rule_score >= 0.40:
-                    combined = max(rule_score, 0.30 * ml_prob + 0.70 * rule_score)
-                else:
-                    combined = 0.60 * ml_prob + 0.40 * rule_score
-                return round(max(0.0, min(1.0, combined)), 4), "transformer"
+                return round(max(0.0, min(1.0, ml_prob)), 4), "transformer"
             except Exception:
                 pass
     return rule_score, "heuristic"

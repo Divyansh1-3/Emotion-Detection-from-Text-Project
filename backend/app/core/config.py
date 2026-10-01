@@ -48,7 +48,7 @@ class Settings:
 
     # ---- Pretrained models --------------------------------------------------
     emotion_model: str = "j-hartmann/emotion-english-distilroberta-base"
-    sarcasm_model: str = "helinivan/english-sarcasm-detector"
+    sarcasm_model: str = "cardiffnlp/twitter-roberta-base-irony"
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     use_models: bool = True                # False -> heuristic/TF-IDF fallback (tests, offline)
 
@@ -121,7 +121,7 @@ def get_settings() -> Settings:
         llm_timeout_seconds=_float("LLM_TIMEOUT_SECONDS", "20"),
         llm_max_tokens=_int("LLM_MAX_TOKENS", "200"),
         emotion_model=os.getenv("EMOTION_MODEL", "j-hartmann/emotion-english-distilroberta-base"),
-        sarcasm_model=os.getenv("SARCASM_MODEL", "helinivan/english-sarcasm-detector"),
+        sarcasm_model=os.getenv("SARCASM_MODEL", "cardiffnlp/twitter-roberta-base-irony"),
         embedding_model=os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"),
         use_models=_bool("USE_MODELS", "1"),
         uncertain_threshold=_float("UNCERTAIN_THRESHOLD", "0.40"),
