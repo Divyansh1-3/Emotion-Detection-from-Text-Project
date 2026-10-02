@@ -112,6 +112,13 @@ def fuse_signals(
             fear_pen = blended["fear"] * 0.75 * sarcasm_prob
             blended["fear"] -= fear_pen
             shift_amount += fear_pen
+        # Sadness mask: the transformer sometimes misreads ironic praise as sadness.
+        # Only discount it when a positive "mask" word is present (has_praise), so
+        # genuine sadness (no praise token, e.g. grief) is never erased.
+        if has_praise and blended.get("sadness", 0.0) > 0.25:
+            sad_pen = blended["sadness"] * min(sarcasm_prob, 0.80)
+            blended["sadness"] -= sad_pen
+            shift_amount += sad_pen
 
         if shift_amount > 0:
             if any(cue in rule_res.cues for cue in ["adversity:puddle", "adversity:odor", "adversity:stench", "adversity:spill", "adversity:spoiled", "adversity:dirty", "adversity:clothes", "adversity:burst", "adversity:curdled"]):
