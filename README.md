@@ -1,280 +1,237 @@
 # P_098 — Emotion Detection from Text
 
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
-[![Flask 3.0](https://img.shields.io/badge/framework-Flask%203.0-lightgrey.svg)](https://flask.palletsprojects.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests: Passing](https://img.shields.io/badge/tests-22%20passed-brightgreen.svg)]()
-[![Macro-F1](https://img.shields.io/badge/Macro--F1-0.886-success.svg)]()
+A hybrid NLP service that reads a sentence and returns its **emotion**, a
+**confidence** score, a **sarcasm** flag, and a short plain-English
+**explanation** — combining a transformer model, deterministic linguistic rules,
+and semantic retrieval so no single component can be wrong on its own.
 
-> **Project Code:** P_098  
-> **Candidate:** Divya  
-> **Industrial Training Program:** HCL Technologies  
-> **Topic:** Emotion Detection from Text using Pretrained Transformers & Hybrid RAG Architecture  
+> ⚠️ This is a linguistic **tone-analysis** instrument, **not** a clinical or
+> psychological diagnostic tool.
 
 ---
 
-## 1. Project Overview
+## Overview
 
-**P_098 Emotion Detection from Text** is a production-grade NLP classification and affective analysis engine. While traditional sentiment analysis classifies text into crude positive/negative binaries, P_098 accurately identifies the dominant emotional state across seven discrete affective categories:
-* 😄 **Joy** &bull; 😠 **Anger** &bull; 😢 **Sadness** &bull; 😨 **Fear** &bull; 😮 **Surprise** &bull; 🤢 **Disgust** &bull; 😐 **Neutral**
+Given any English text, the API classifies it into one of **7 emotions** —
+`anger`, `disgust`, `fear`, `joy`, `neutral`, `sadness`, `surprise` — and
+returns a calibrated confidence, an *uncertain* badge when the signal is weak,
+a sarcasm assessment, and a grounded rationale. Every result is persisted to
+SQLite and viewable through a REST API or a server-rendered web UI.
 
-### Key Differentiators:
-* **Hybrid Multi-Engine Fusion:** Combines deterministic rules, pretrained deep learning transformers (`DistilRoBERTa`), specialized sarcasm classification, and semantic RAG retrieval into a single calibrated decision.
-* **Deterministic Label Decision:** The primary emotion label is decided purely by calibrated mathematical fusion (`fusion.py`), **never by an LLM**. The LLM provides strictly bounded, human-interpretable rationales without hallucinating or flipping labels.
-* **Explicit Sarcasm Flagging:** Ironic utterances (e.g. *"Oh fantastic, another flat tire"*) are flagged explicitly with a sarcasm intensity score rather than silently corrupting emotion sentiment.
-* **Frontend &harr; Backend Parity:** The browser dashboard computes nothing client-side; every metric is produced by the Flask pipeline, saved to SQLite, and verifiable on the server-rendered `/inspect` audit page.
-* **8 GB RAM Friendly & 100% Offline-Safe:** Optimized for CPU inference under 1.2 GB RAM with deterministic template fallbacks if external API keys are unavailable.
+The headline idea is a **hybrid pipeline**: a neural model gives the primary
+signal, but hand-written rules and a retrieval "k-NN vote" are blended in to
+correct it — and *every* stage has an offline fallback, so the app still runs
+with no models downloaded and no API key configured.
 
----
+## Key features
 
-## 2. Target Architecture: The 6 Hybrid Engines
+- 🧠 **Hybrid engine** — transformer (70%) + rule lexicon (15%) + RAG retrieval (15%), fused and calibrated.
+- 🛟 **Graceful degradation** — transformer→heuristic, embeddings→TF-IDF→keyword, LLM→template. Nothing hard-fails.
+- 🎭 **Sarcasm handling** — detects irony and *corrects the emotion* (e.g. fake praise over an adversity → anger/disgust, not joy).
+- 📏 **Uncertainty calibration** — flags low-confidence or close-call predictions instead of overclaiming.
+- 🔒 **Safety boundary** — strips prompt-injection, redacts clinical/diagnostic terms, always attaches a disclaimer.
+- 🧾 **Full traceability** — every response records which engines ran and the route taken.
+- 🌐 **REST API + Web UI + SQLite** — single-text and batch (JSON or CSV), plus a `/inspect` review dashboard.
 
-```mermaid
-flowchart TD
-    A["Raw Input Utterance (Text / Batch CSV)"] --> B["1. Input Validation & Hygiene (validator.py)"]
-    B --> C["2. Preprocessing & Normalization (preprocess.py)"]
-    
-    C --> D1["3. Deterministic Rules (rules.py)"]
-    C --> D2["4. Emotion Transformer (emotion_model.py)"]
-    C --> D3["5. Sarcasm Classifier (sarcasm_model.py)"]
-    C --> D4["6. Semantic RAG & k-NN (retrieval.py)"]
-    
-    D1 --> E["Signal Fusion & Calibration Engine (fusion.py)"]
-    D2 --> E
-    D3 --> E
-    D4 --> E
-    
-    E --> F["Calibrated Decision: Primary Label + Sarcasm Flag + Uncertainty Margin"]
-    F --> G["Bounded LLM Rationale Synthesis (llm.py / Offline Fallback)"]
-    
-    G --> H["Output Safety Hardening & Clinical Term Redaction (validator.py)"]
-    H --> I["Persistence (SQLite: analyses) & Structured JSON Logger"]
-    
-    I --> J1["Interactive Web Dashboard (/)"]
-    I --> J2["Server-Rendered /inspect Audit View"]
-    I --> J3["RESTful API Clients (/api/v1/emotion/process)"]
-```
-
----
-
-## 3. Frontend &harr; Backend Parity & The `/inspect` View
-
-To satisfy strict enterprise compliance and grading standards, P_098 implements true **Frontend &harr; Backend Parity**:
-1. **Single Source of Truth:** Every execution of the pipeline writes an immutable `AnalysisResult` row into SQLite (`emotion.sqlite3`).
-2. **Server-Side `/inspect` Page:** Reviewers can visit `http://127.0.0.1:5000/inspect` to examine all recorded transactions directly from the database, displaying:
-   * Input text and language
-   * Predicted emotion and emoji badge
-   * Calibrated confidence percentage
-   * Sarcasm flag and intensity score
-   * Uncertainty status
-   * Latency in milliseconds
-   * Execution route trace (e.g. `[input_validation, preprocess, rules, emotion_model_transformer, retrieval_rag, fusion, rationale]`)
-   * Retrieved RAG grounding exemplars
-3. **Structured Request Logging:** Every request outputs a structured single-line JSON log to console and `logs/` for production monitoring.
-
----
-
-## 4. Empirical Evaluation Benchmark
-
-Evaluated using `python scripts/evaluate.py` across gold-standard test corpora:
-
-| Evaluation Dimension | Metric | Baseline Threshold | Measured Result | Status |
-| :--- | :--- | :---: | :---: | :---: |
-| **Emotion Classification** | **Macro-F1 Score** | &ge; 0.700 | **0.886** | **PASSED** |
-| **Emotion Classification** | **Accuracy** | &ge; 70.0% | **88.6%** | **PASSED** |
-| **Emotion Classification** | **Weighted-F1** | &ge; 0.700 | **0.888** | **PASSED** |
-| **Sarcasm Detection** | **F1 Score** | &ge; 0.650 | **0.857** | **PASSED** |
-| **Sarcasm Detection** | **Precision / Recall** | &ge; 0.650 | **0.800 / 0.923** | **PASSED** |
-| **Inference Speed (CPU)** | **Mean Latency** | < 150 ms | **68.2 ms** | **PASSED** |
-
-### Per-Class Emotion Metrics:
-| Emotion Label | Precision | Recall | F1-Score | Support |
-| :--- | :---: | :---: | :---: | :---: |
-| **Joy** | 0.941 | 0.941 | **0.941** | 5 |
-| **Anger** | 0.882 | 0.882 | **0.882** | 5 |
-| **Sadness** | 0.857 | 0.857 | **0.857** | 5 |
-| **Fear** | 0.882 | 0.882 | **0.882** | 5 |
-| **Surprise** | 0.875 | 0.875 | **0.875** | 5 |
-| **Disgust** | 0.889 | 0.889 | **0.889** | 5 |
-| **Neutral** | 0.875 | 0.875 | **0.875** | 5 |
-
----
-
-## 5. Repository Structure
+## Architecture
 
 ```
-p098-emotion-detection-text-divya/
-├── backend/
-│   └── app/
-│       ├── __init__.py            # Flask app factory (registers routes & templates)
-│       ├── main.py                # Server entrypoint
-│       ├── core/
-│       │   ├── config.py          # Env-driven settings dataclass
-│       │   └── logging.py         # Structured JSON request logger
-│       ├── domain/
-│       │   └── emotion_schema.py  # Domain types, AnalysisResult value object
-│       ├── schemas/
-│       │   └── analysis.py        # Pydantic request/response validation schemas
-│       ├── engines/
-│       │   ├── preprocess.py      # Emojis, slang expansion, negation tagging
-│       │   ├── rules.py           # Deterministic lexicon cues & sarcasm heuristics
-│       │   ├── emotion_model.py   # DistilRoBERTa emotion transformer pipeline
-│       │   ├── sarcasm_model.py   # Specialized sarcasm classification pipeline
-│       │   ├── retrieval.py       # RAG knowledge base & exemplar k-NN vote
-│       │   ├── fusion.py          # Probability blending & margin calibration
-│       │   ├── llm.py             # Bounded OpenAI client & deterministic template fallback
-│       │   ├── validator.py       # Input hygiene, injection defense, safety boundary
-│       │   └── router.py          # Hybrid engine pipeline orchestrator
-│       ├── services/
-│       │   └── analysis_service.py # Single & batch execution, persistence coordination
-│       ├── repositories/
-│       │   └── results_repository.py # Thread-safe SQLite persistence layer
-│       └── api/routes/
-│           ├── analysis.py        # REST API endpoints (/process, /batch, /results, /health)
-│           └── views.py           # Server-rendered dashboard (/) and /inspect view
-├── frontend/
-│   ├── templates/                 # Jinja HTML templates (base, index, inspect, inspect_detail)
-│   └── static/                    # CSS stylesheet & client-side app.js (Chart.js via CDN)
-├── data/
-│   ├── sample/sample_inputs.csv   # Demo input utterances
-│   ├── eval/emotion_eval.csv      # 35 gold-standard evaluation samples
-│   ├── eval/sarcasm_eval.csv      # Sarcasm evaluation benchmark set
-│   └── kb/                        # emotions.jsonl & exemplars.jsonl (RAG corpus)
-├── prompts/
-│   ├── tasks/emotion_rationale_v1.txt # Versioned bounded prompt template
-│   └── system/safety_boundary.txt     # Non-diagnostic safety statement
-├── scripts/
-│   ├── download_models.py         # Pulls HF model weights (never committed)
-│   ├── build_index.py             # Indexes RAG knowledge base & exemplars
-│   ├── evaluate.py                # Automated Macro-F1 evaluation suite
-│   └── build_presentation.py      # Automated PPTX presentation generator
-├── tests/
-│   ├── test_rules.py              # Zero-ML deterministic unit tests
-│   ├── test_fusion.py             # Fusion & uncertainty calibration unit tests
-│   ├── test_validator.py          # Input cap & safety boundary tests
-│   ├── test_api.py                # Full Flask API & /inspect integration tests
-│   └── test_redteam.py            # Adversarial prompt-injection tests
-├── docs/
-│   ├── handbook.md                # Comprehensive Product Handbook (flagship document)
-│   ├── architecture-note.md       # Technical design decisions & fusion math
-│   ├── evaluation-report.md       # Full evaluation benchmark report
-│   ├── limitations.md             # Known failure modes & mitigation strategies
-│   ├── project-brief.md           # Business value and project overview
-│   ├── requirements.md            # Traceable requirements matrix
-│   ├── user-flow.md               # User interaction flows & system state diagrams
-│   ├── test-plan.md               # Quality assurance test matrices
-│   └── demo-script.md             # Turn-by-turn presentation & live-demo script
-├── presentation/                  # Generated P098_Emotion_Detection.pptx deck
-├── Dockerfile                     # Multi-stage, non-root production container
-├── requirements.txt               # Pinned Python dependencies
-└── README.md                      # This document
+HTTP request
+   │
+   ▼
+api/routes/ ───────────► endpoints + Pydantic request validation
+   │
+   ▼
+services/analysis_service.py ──► orchestrate · persist · log · batch
+   │
+   ▼
+engines/router.py ──────► THE PIPELINE (runs every engine in order)
+   │   validator · preprocess · rules · emotion_model · sarcasm_model
+   │   retrieval(RAG) · fusion · llm(rationale) · validator(harden)
+   ▼
+repositories/results_repository.py ──► SQLite (read back by API + /inspect)
 ```
 
----
+Layered, framework-light domain objects, and a clean separation of concerns
+(*Application Factory*, *Blueprints*, *Service layer*, *Repository pattern*).
 
-## 6. Quickstart / Installation (Fresh-Clone Contract)
+### The analysis pipeline (9 steps)
 
-### 6.1 Prerequisites
-* Python 3.11 installed
-* Windows, macOS, or Linux
+1. **Input validation** — trim, size-check, strip control chars, flag injection patterns.
+2. **Preprocess** — demojize, expand slang, detect negation / CAPS / language.
+3. **Rules** — lexicon emotion hints + a sarcasm-cue score (markers, praise⊕adversity contrast, punctuation, emoji).
+4. **Emotion model** — DistilRoBERTa 7-way classifier *(→ heuristic fallback)*.
+5. **Sarcasm model** — RoBERTa irony classifier *(→ rule-cue fallback)*.
+6. **Retrieval (RAG)** — MiniLM embeddings over a knowledge base + k-NN vote *(→ TF-IDF → keyword fallback)*.
+7. **Fusion & calibration** — blend signals, resolve sarcasm, apply emotion correction, decide confidence / uncertainty.
+8. **Rationale** — bounded LLM explanation *(→ deterministic template fallback)*. Never overrides the label.
+9. **Output hardening** — clamp scores, redact clinical terms, attach disclaimer, record route + latency.
 
-### 6.2 Setup Steps
-```bash
-# 1. Clone repository and navigate to folder
-cd p098-emotion-detection-text-divya
+## Tech stack
 
-# 2. Create and activate virtual environment
+| Layer | Choice |
+|---|---|
+| Web / API | Flask 3, Pydantic v2 |
+| Emotion model | `j-hartmann/emotion-english-distilroberta-base` |
+| Sarcasm model | `cardiffnlp/twitter-roberta-base-irony` |
+| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
+| Retrieval fallback | scikit-learn (TF-IDF + cosine) |
+| LLM rationale | any OpenAI-compatible endpoint (OpenAI / Gemini / Ollama) |
+| Storage | SQLite (stdlib `sqlite3`) |
+
+## Project structure
+
+```
+P_098-emotion-detection-text-divyansh-yadav/
+├── backend/app/
+│   ├── __init__.py            # Flask application factory
+│   ├── main.py                # entrypoint (warm-up + run server)
+│   ├── api/routes/            # analysis API + /inspect views + /health
+│   ├── core/                  # config (env) + logging
+│   ├── domain/                # emotion schema, labels, value objects
+│   ├── engines/               # the 9-step pipeline (router + engines)
+│   ├── repositories/          # SQLite persistence
+│   ├── schemas/               # Pydantic request models
+│   └── services/              # pipeline orchestration
+├── data/kb/                   # emotions.jsonl + exemplars.jsonl (RAG corpus)
+├── frontend/                  # Jinja templates + static assets
+├── prompts/                   # LLM system + task prompts
+├── tests/                     # pytest suite
+├── .env.example               # copy to .env
+├── requirements.txt
+└── pytest.ini
+```
+
+## Getting started
+
+### Prerequisites
+- **Python 3.10+**
+
+### Installation
+
+```powershell
+# 1. From the project folder, create & activate a virtual environment
 python -m venv .venv
-# On Windows:
-.venv\Scripts\activate
-# On Linux/macOS:
-source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1          # Windows PowerShell
+# source .venv/bin/activate           # macOS / Linux
 
-# 3. Install dependencies
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 4. (Optional) Download pretrained transformer weights for deep learning mode:
-python scripts/download_models.py
+# 3. Create your local config
+copy .env.example .env                # Windows
+# cp .env.example .env                # macOS / Linux
+```
 
-# 5. Build RAG knowledge base index:
-python scripts/build_index.py
+### Models
 
-# 6. Run the Flask application:
+On the first run with `USE_MODELS=1`, the transformer and embedding models are
+downloaded automatically from Hugging Face into your local cache; later runs can
+set `HF_HUB_OFFLINE=1` to load them from cache without any network calls.
+
+Don't want the downloads (or offline)? Set `USE_MODELS=0` in `.env` to run the
+pipeline in **fast heuristic mode** — it uses the rule lexicon + TF-IDF and
+still returns full, valid results.
+
+### Run
+
+```powershell
 python -m backend.app.main
 ```
 
-Open your browser at **`http://127.0.0.1:5000`** to access the interactive dashboard.  
-Visit **`http://127.0.0.1:5000/inspect`** to review backend persistence and execution route traces.
+- Web dashboard → <http://127.0.0.1:5000/>
+- Inspection view → <http://127.0.0.1:5000/inspect>
+- Health check → <http://127.0.0.1:5000/health>
 
-### 6.3 Run Tests
+## Configuration
+
+All settings are read from `.env` (see `.env.example`). The app runs with zero
+configuration — every value has a sensible default.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LLM_MODE` | `mock` | `api` = call the LLM; `mock` = offline template rationale |
+| `OPENAI_API_KEY` | *(empty)* | key for the LLM; blank forces offline mode |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | any OpenAI-compatible endpoint |
+| `OPENAI_MODEL` | `gpt-4o-mini` | model name for the rationale |
+| `USE_MODELS` | `1` | `0` = skip transformers, use heuristic/TF-IDF |
+| `EMOTION_MODEL` / `SARCASM_MODEL` / `EMBEDDING_MODEL` | *(see above)* | Hugging Face model ids |
+| `UNCERTAIN_THRESHOLD` | `0.40` | below this top-score (or small margin) → *uncertain* |
+| `SARCASM_THRESHOLD` | `0.50` | sarcasm flag cutoff |
+| `RETRIEVAL_TOP_K` | `5` | exemplars retrieved per query |
+| `DATABASE_URL` | `sqlite:///emotion.sqlite3` | persistence target |
+| `FLASK_HOST` / `FLASK_PORT` | `127.0.0.1` / `5000` | server bind |
+| `MAX_INPUT_CHARS` / `MAX_BATCH_ROWS` | `4000` / `500` | request limits |
+
+> 🔐 **Never commit your real `.env`.** It's already in `.gitignore`. Keep API keys out of version control.
+
+## API reference
+
+Base path: `/api/v1/emotion`
+
+### `POST /process` — analyze one text
+
 ```bash
-pytest
+curl -X POST http://127.0.0.1:5000/api/v1/emotion/process \
+  -H "Content-Type: application/json" \
+  -d '{"input": "Oh great, my train got cancelled again. Just what I needed."}'
 ```
 
-### 6.4 Run Offline Benchmark Evaluation
-```bash
-python scripts/evaluate.py
-```
-
-### 6.5 Generate Presentation Deck
-```bash
-python scripts/build_presentation.py
-```
-
----
-
-## 7. Docker Deployment
-
-```bash
-# Build the production container
-docker build -t p098-emotion-detector .
-
-# Run the container on port 5000
-docker run -p 5000:5000 p098-emotion-detector
-```
-
----
-
-## 8. API Reference
-
-### Analyze Single Text
-`POST /api/v1/emotion/process`
-```json
+```jsonc
 {
-  "input": "I just received the promotion I worked towards for two full years! Celebrating tonight! 🎉",
-  "session_id": "optional_id"
+  "success": true,
+  "result": {
+    "primary_emotion": "anger",
+    "confidence": 0.62,
+    "uncertain": false,
+    "sarcasm": true,
+    "sarcasm_score": 0.99,
+    "emotion_scores": [{"label": "anger", "score": 0.62}, {"label": "disgust", "score": 0.19}],
+    "rationale": "The text exhibits sarcastic tone cues with irony...",
+    "route": ["input_validation", "preprocess", "rules", "emotion_model_transformer", "..."]
+  },
+  "sources": [ ... ],
+  "warnings": [ ... ],
+  "request_id": "req_xxxxxxxxxxxx"
 }
 ```
 
-### Batch Upload
-`POST /api/v1/emotion/batch`  
-Accepts either `multipart/form-data` with CSV file `file` or JSON payload:
-```json
-{
-  "texts": ["First utterance", "Second utterance"]
-}
+### `POST /batch` — analyze many
+JSON list: `{"texts": ["...", "..."]}`  ·  or a CSV upload (multipart field `file`,
+auto-detecting a `text`/`sentence`/`input` column).
+
+### Other endpoints
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/emotion/results?limit=&offset=` | paginated history |
+| `GET` | `/api/v1/emotion/results/<id>` | one stored analysis |
+| `GET` | `/api/v1/emotion/stats` | totals + emotion distribution |
+| `GET` | `/health` | service + model status |
+
+## Testing
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
-### Get Stored Results
-`GET /api/v1/emotion/results?limit=50&offset=0`
+Tests run **offline and fast** (`conftest.py` sets `USE_MODELS=0`, `LLM_MODE=mock`)
+and cover the rules, validator, fusion/calibration, API, and red-team safety cases.
 
-### Get Health Status
-`GET /health`
+## How it works — fusion & sarcasm
+
+The emotion/sarcasm **labels are decided deterministically** in `fusion.py`; the
+LLM only writes the explanation. Fusion blends the three signals, then:
+
+- resolves sarcasm from the irony model **and** rule cues (guarding genuine joy/sadness/neutral against false positives), and
+- when sarcasm is detected, **discounts the superficial masking emotions** (joy / surprise / neutral / sadness) and shifts that weight to **anger / disgust** — so ironic praise over a mishap is read correctly.
+
+## Limitations
+
+- Optimized for **English**; other languages fall back to weaker signals.
+- Fusion sarcasm thresholds are hand-tuned heuristics, not learned.
+- Batch is processed sequentially (simple and predictable, not high-throughput).
+- **Not** a clinical, medical, or psychological assessment tool.
 
 ---
 
-## 9. Safety Boundaries & Non-Diagnostic Limits
-
-1. **Non-Diagnostic Tool:** P_098 is strictly an NLP text classification instrument. It is explicitly **not** a clinical psychiatric, psychological, or medical diagnostic instrument.
-2. **Clinical Term Redaction:** Any clinical psychiatric terms appearing in generated rationales are automatically redacted by `validator.py`.
-3. **Prompt Injection Defense:** User text is treated strictly as passive string data; instructions attempting to override system behavior are neutralized.
-
----
-
-## 10. Deliverables Summary
-
-* **Interactive Web App:** Dashboard (`/`) and server-rendered `/inspect` view.
-* **Product Handbook:** Complete guide in `docs/handbook.md`.
-* **Evaluation Suite:** Benchmark script `scripts/evaluate.py` and report `docs/evaluation-report.md`.
-* **Presentation Deck:** Generated PowerPoint file `presentation/P098_Emotion_Detection.pptx`.
-* **Complete Test Harness:** 22 unit, integration, and security red-team tests in `tests/`.
+**Project:** P_098 — Emotion Detection from Text · **Author:** Divyansh Yadav
