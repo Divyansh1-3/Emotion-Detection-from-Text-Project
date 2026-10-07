@@ -911,7 +911,7 @@ def generate_ui_wireframe_diagram(output_path: str):
     ax.text(
         56.0,
         9.2,
-        "Route: deep+rag+gemini  |  Latency: 48.2 ms  |  Audit Record: Saved to emotion.sqlite3",
+        "Route: deep+rag+gemini  |  Audit Record: Saved to emotion.sqlite3",
         ha="left",
         va="center",
         fontsize=6.4,
