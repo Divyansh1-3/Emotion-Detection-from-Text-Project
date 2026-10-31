@@ -1,0 +1,61 @@
+{
+  "method": "TF-IDF + logistic regression",
+  "scikit_learn_version": "1.9.1",
+  "train_examples": 16000,
+  "test_examples": 1989,
+  "excluded_test_duplicates": 11,
+  "accuracy": 0.8823529411764706,
+  "macro_f1": 0.8424409763682382,
+  "training_seconds": 3.909,
+  "per_emotion": {
+    "anger": {
+      "precision": 0.8692579505300353,
+      "recall": 0.8978102189781022,
+      "f1-score": 0.8833034111310593,
+      "support": 274.0
+    },
+    "fear": {
+      "precision": 0.8926829268292683,
+      "recall": 0.8169642857142857,
+      "f1-score": 0.8531468531468531,
+      "support": 224.0
+    },
+    "joy": {
+      "precision": 0.9185185185185185,
+      "recall": 0.8985507246376812,
+      "f1-score": 0.9084249084249084,
+      "support": 690.0
+    },
+    "love": {
+      "precision": 0.7157894736842105,
+      "recall": 0.8662420382165605,
+      "f1-score": 0.7838616714697406,
+      "support": 157.0
+    },
+    "sadness": {
+      "precision": 0.9333333333333333,
+      "recall": 0.8946459412780656,
+      "f1-score": 0.9135802469135802,
+      "support": 579.0
+    },
+    "surprise": {
+      "precision": 0.6419753086419753,
+      "recall": 0.8,
+      "f1-score": 0.7123287671232876,
+      "support": 65.0
+    },
+    "accuracy": 0.8823529411764706,
+    "macro avg": {
+      "precision": 0.8285929185895569,
+      "recall": 0.8623688681374492,
+      "f1-score": 0.8424409763682382,
+      "support": 1989.0
+    },
+    "weighted avg": {
+      "precision": 0.8880959146620981,
+      "recall": 0.8823529411764706,
+      "f1-score": 0.8839989099118742,
+      "support": 1989.0
+    }
+  }
+}

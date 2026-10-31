@@ -1,0 +1,16 @@
+{
+  "dataset": "dair-ai/emotion",
+  "revision": "cab853a1dbdf4c42c2b3ef2173804746df8825fe",
+  "files": {
+    "train": {
+      "url": "https://huggingface.co/datasets/dair-ai/emotion/resolve/cab853a1dbdf4c42c2b3ef2173804746df8825fe/split/train-00000-of-00001.parquet",
+      "source_sha256": "10817f0f2ea42358bc62f69a09dfb8bd71701727df6d5a387bea742f3ea06417",
+      "rows": 16000
+    },
+    "test": {
+      "url": "https://huggingface.co/datasets/dair-ai/emotion/resolve/cab853a1dbdf4c42c2b3ef2173804746df8825fe/split/test-00000-of-00001.parquet",
+      "source_sha256": "6f8407fa1ca9c310f55781f082ed73812f6551e8dda2c61973123a121869245b",
+      "rows": 2000
+    }
+  }
+}

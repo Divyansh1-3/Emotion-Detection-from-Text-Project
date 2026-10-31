@@ -1,44 +1,15 @@
-name: CI Pipeline
+name: Test Streamlit app
 
-on:
-  push:
-    branches: [ main, dev ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      USE_MODELS: "0"
-      LLM_MODE: "mock"
-      HF_HUB_OFFLINE: "1"
-      CALIBRATION_ENABLED: "0"
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Initialize RAG Index
-      run: |
-        python scripts/build_index.py
-
-    - name: Run Test Suite
-      env:
-        USE_MODELS: "0"
-        LLM_MODE: "mock"
-      run: |
-        pytest -v
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
