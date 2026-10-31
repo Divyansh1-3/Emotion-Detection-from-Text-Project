@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 # Absolute hard cap; the per-request configured limit (MAX_INPUT_CHARS) is
 # enforced in the service so it can stay env-tunable.
@@ -33,10 +33,11 @@ class AnalyzeRequest(BaseModel):
 class BatchRequest(BaseModel):
     """JSON body of POST /api/v1/emotion/batch (CSV upload handled in the route)."""
 
-    texts: list[str] = Field(default_factory=list)
+    texts: list[str] = Field(..., min_length=1, validation_alias=AliasChoices("texts", "inputs"))
     session_id: Optional[str] = None
 
     @field_validator("texts")
     @classmethod
     def _clean(cls, v: list[str]) -> list[str]:
-        return [t.strip() for t in v if isinstance(t, str) and t.strip()]
+        # Keep row positions, including blanks, so errors identify the original row.
+        return v

@@ -22,7 +22,7 @@ from backend.app.engines.emotion_model import predict_emotions
 from backend.app.engines.fusion import fuse_signals
 from backend.app.engines.llm import generate_rationale
 from backend.app.engines.preprocess import clean_text_for_analysis
-from backend.app.engines.retrieval import compute_knn_vote, retrieve_similar
+from backend.app.engines.retrieval import compute_knn_vote, retrieve_similar, retrieval_backend
 from backend.app.engines.rules import analyze_rules
 from backend.app.engines.sarcasm_model import predict_sarcasm
 from backend.app.engines.validator import validate_and_harden_result, validate_input_text
@@ -68,9 +68,13 @@ def execute_pipeline(
     engines_used.append(f"sarcasm_model ({sarcasm_backend})")
 
     # 6. Semantic Retrieval (RAG) & k-NN vote
-    route.append("retrieval_rag")
-    engines_used.append("retrieval_rag")
     retrieved = retrieve_similar(prep.cleaned_text)
+    route.append(f"retrieval_rag_{retrieval_backend()}")
+    engines_used.append(f"retrieval_rag ({retrieval_backend()})")
+    if prep.detected_language != "en":
+        warnings.append("Models are optimized for English; language detection is approximate and other languages may be unreliable.")
+    if len(prep.cleaned_text) > 1000:
+        warnings.append("Transformer inputs are limited to 512 tokens; long text may be truncated by the tokenizer.")
     knn_vote = compute_knn_vote(retrieved)
 
     # 7. Signal Fusion & Calibration

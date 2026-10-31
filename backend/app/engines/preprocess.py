@@ -16,6 +16,8 @@ except Exception:  # pragma: no cover
 
 try:  # optional dependency
     from langdetect import detect as _lang_detect
+    from langdetect import DetectorFactory
+    DetectorFactory.seed = 0
 except Exception:  # pragma: no cover
     _lang_detect = None
 

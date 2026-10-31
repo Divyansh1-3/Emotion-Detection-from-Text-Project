@@ -14,7 +14,12 @@ Usage:
 """
 from __future__ import annotations
 
+import argparse
 import csv
+import json
+import os
+import platform
+from datetime import datetime, timezone
 import sys
 import time
 from pathlib import Path
@@ -24,6 +29,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import (
@@ -125,7 +132,7 @@ def generate_charts(emotion_res: dict, sarcasm_res: dict, out_path: Path):
     f1_scores = [emotion_res["per_class"][l]["f1"] * 100 for l in labels]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-    
+
     # Emotion F1 bar chart
     colors = ["#dc2626", "#059669", "#9333ea", "#16a34a", "#475569", "#0284c7", "#d97706"]
     bars = ax1.bar(labels, f1_scores, color=colors, edgecolor="#334155")
@@ -163,10 +170,11 @@ def generate_charts(emotion_res: dict, sarcasm_res: dict, out_path: Path):
 
 
 def write_markdown_report(em_res: dict, sarc_res: dict, out_path: Path):
+    status = lambda passed: "PASSED" if passed else "FAILED"
     md = f"""# P_098 — Model Evaluation & Performance Report
 
-**Evaluation Date:** Current Run  
-**Test Set Size:** {em_res['total']} Emotion Cases, {sarc_res['total']} Sarcasm Cases  
+**Evaluation Date:** {datetime.now(timezone.utc).isoformat()}
+**Test Set Size:** {em_res['total']} Emotion Cases, {sarc_res['total']} Sarcasm Cases
 **Engine Route:** Hybrid (Preprocess &bull; Rules &bull; Emotion Model &bull; Sarcasm Model &bull; RAG &bull; Fusion)
 
 ---
@@ -175,11 +183,11 @@ def write_markdown_report(em_res: dict, sarc_res: dict, out_path: Path):
 
 | Target Task | Primary Metric | Baseline Target | Measured Result | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **Emotion Classification** | **Macro-F1** | &ge; 0.700 | **{em_res['macro_f1']:.3f}** | **PASSED** |
-| **Emotion Classification** | **Accuracy** | &ge; 70.0% | **{em_res['accuracy'] * 100:.1f}%** | **PASSED** |
-| **Emotion Classification** | **Weighted-F1**| &ge; 0.700 | **{em_res['weighted_f1']:.3f}** | **PASSED** |
-| **Sarcasm Detection** | **F1 Score** | &ge; 0.650 | **{sarc_res['f1']:.3f}** | **PASSED** |
-| **Inference Latency** | **Mean Latency** | < 150 ms (CPU) | **{em_res['avg_latency_ms']:.1f} ms** | **PASSED** |
+| **Emotion Classification** | **Macro-F1** | &ge; 0.700 | **{em_res['macro_f1']:.3f}** | **{status(em_res['macro_f1'] >= 0.70)}** |
+| **Emotion Classification** | **Accuracy** | &ge; 70.0% | **{em_res['accuracy'] * 100:.1f}%** | **{status(em_res['accuracy'] >= 0.70)}** |
+| **Emotion Classification** | **Weighted-F1**| &ge; 0.700 | **{em_res['weighted_f1']:.3f}** | **{status(em_res['weighted_f1'] >= 0.70)}** |
+| **Sarcasm Detection** | **F1 Score** | &ge; 0.650 | **{sarc_res['f1']:.3f}** | **{status(sarc_res['f1'] >= 0.65)}** |
+| **Inference Latency** | **Mean Latency** | < 150 ms (CPU) | **{em_res['avg_latency_ms']:.1f} ms** | **{status(em_res['avg_latency_ms'] < 150)}** |
 
 ---
 
@@ -203,7 +211,7 @@ def write_markdown_report(em_res: dict, sarc_res: dict, out_path: Path):
 - **Recall:** {sarc_res['recall']:.3f}
 - **F1 Score:** {sarc_res['f1']:.3f}
 
-*Key Sarcasm Architectural Rule:* The system surfaces sarcasm as an explicit flag with confidence intensity rather than silently inverting the emotion label.
+*Sarcasm policy:* Detected irony is flagged and can redistribute emotion scores toward anger/disgust. This is a heuristic and may be wrong.
 
 ---
 
@@ -212,7 +220,7 @@ def write_markdown_report(em_res: dict, sarc_res: dict, out_path: Path):
 - **Mean Pipeline Latency:** `{em_res['avg_latency_ms']:.1f} ms`
 - **95th Percentile Latency:** `{em_res['p95_latency_ms']:.1f} ms`
 
-All inference executes within an 8 GB RAM footprint on standard CPU without dedicated GPU acceleration.
+Latency measures the warm pipeline including template rationale, excluding startup, HTTP and persistence. Memory usage is not measured by this script. This small curated sample does not establish general accuracy.
 
 ---
 
@@ -225,32 +233,46 @@ All inference executes within an 8 GB RAM footprint on standard CPU without dedi
 
 
 def main():
-    print("=" * 65)
-    print(" P_098 — Offline Model Evaluation Runner")
-    print("=" * 65)
-
-    emotion_csv = ROOT / "data" / "eval" / "emotion_eval.csv"
-    sarcasm_csv = ROOT / "data" / "eval" / "sarcasm_eval.csv"
-
-    if not emotion_csv.exists() or not sarcasm_csv.exists():
-        print("[!] Evaluation CSV datasets not found!")
-        sys.exit(1)
-
-    em_res = evaluate_emotions(emotion_csv)
-    sarc_res = evaluate_sarcasm(sarcasm_csv)
-
-    print("\n" + "=" * 65)
-    print(" EVALUATION RESULTS SUMMARY")
-    print(f" Emotion Macro-F1:  {em_res['macro_f1']:.4f} (Accuracy: {em_res['accuracy']*100:.1f}%)")
-    print(f" Sarcasm F1-Score:  {sarc_res['f1']:.4f} (Accuracy: {sarc_res['accuracy']*100:.1f}%)")
-    print(f" Mean CPU Latency:  {em_res['avg_latency_ms']:.1f} ms")
-    print("=" * 65)
-
-    chart_path = ROOT / "docs" / "evaluation-charts.png"
-    report_path = ROOT / "docs" / "evaluation-report.md"
-
-    generate_charts(em_res, sarc_res, chart_path)
-    write_markdown_report(em_res, sarc_res, report_path)
+    parser = argparse.ArgumentParser(description="Reproducible local evaluation; never calls an LLM API.")
+    parser.add_argument("--mode", choices=["hybrid", "fallback"], default="hybrid")
+    parser.add_argument("--check", action="store_true", help="Exit unsuccessfully if any target is missed")
+    args = parser.parse_args()
+    os.environ["LLM_MODE"] = "mock"
+    os.environ["USE_MODELS"] = "1" if args.mode == "hybrid" else "0"
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    from backend.app.engines.warmup import warm_up_models
+    from backend.app.engines.emotion_model import is_model_loaded
+    from backend.app.engines.sarcasm_model import is_model_loaded as sarcasm_loaded
+    from backend.app.engines.retrieval import retrieve_similar, retrieval_backend
+    started = time.perf_counter()
+    warm_up_models()
+    retrieve_similar("Warm up retrieval")
+    startup_ms = (time.perf_counter() - started) * 1000
+    if args.mode == "hybrid" and not (is_model_loaded() and sarcasm_loaded() and retrieval_backend() == "embeddings"):
+        raise SystemExit("Hybrid evaluation requires all three model paths. Download models first, or select --mode fallback.")
+    em = evaluate_emotions(ROOT / "data/eval/emotion_eval.csv")
+    sarc = evaluate_sarcasm(ROOT / "data/eval/sarcasm_eval.csv")
+    suffix = "" if args.mode == "hybrid" else "-fallback"
+    target = ROOT / "docs" / ("evaluation-report" + suffix + ".md")
+    target.parent.mkdir(exist_ok=True)
+    write_markdown_report(em, sarc, target)
+    chart = "evaluation-charts" + suffix + ".png"
+    generate_charts(em, sarc, target.parent / chart)
+    metadata = {
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(), "mode": args.mode,
+        "retrieval": retrieval_backend(), "llm": "mock", "python": platform.python_version(),
+        "platform": platform.platform(), "cpu": platform.processor(),
+        "torch_threads": os.getenv("TORCH_NUM_THREADS", "2"), "startup_ms": startup_ms,
+        "emotion": em, "sarcasm": sarc,
+    }
+    (target.parent / ("evaluation-results" + suffix + ".json")).write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    text = target.read_text(encoding="utf-8").replace("evaluation-charts.png", chart)
+    text = text.replace("**Engine Route:** Hybrid (Preprocess &bull; Rules &bull; Emotion Model &bull; Sarcasm Model &bull; RAG &bull; Fusion)",
+                        f"**Mode:** {args.mode}; retrieval={retrieval_backend()}; LLM=mock; Python={platform.python_version()}\n**Startup:** {startup_ms:.1f} ms (reported separately from warm latency)")
+    target.write_text(text, encoding="utf-8")
+    print(json.dumps({"mode": args.mode, "emotion_f1": em["macro_f1"], "sarcasm_f1": sarc["f1"], "warm_mean_ms": em["avg_latency_ms"], "startup_ms": startup_ms}))
+    if args.check and not (em["macro_f1"] >= .70 and em["accuracy"] >= .70 and sarc["f1"] >= .65 and em["avg_latency_ms"] < 150):
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

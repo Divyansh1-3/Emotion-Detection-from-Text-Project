@@ -102,8 +102,7 @@ class Settings:
             raw = url[len("sqlite:///"):]
             p = Path(raw)
             return p if p.is_absolute() else (self.root / raw)
-        # Non-sqlite backends are a documented config swap; default file otherwise.
-        return self.root / "emotion.sqlite3"
+        raise ValueError("Only sqlite:/// database URLs are supported. PostgreSQL requires a separate repository implementation.")
 
 
 def get_settings() -> Settings:

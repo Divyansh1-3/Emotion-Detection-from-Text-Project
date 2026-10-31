@@ -14,11 +14,6 @@ def client(tmp_path):
         "TESTING": True,
         "DATABASE_URL": f"sqlite:///{test_db}",
     })
-    # Reset repo to temporary database
-    repo = get_repository()
-    repo.db_path = test_db
-    repo.init_db()
-
     with app.test_client() as c:
         yield c
 

@@ -2,7 +2,7 @@
 
 Models downloaded:
 1. Emotion classifier: j-hartmann/emotion-english-distilroberta-base (~330 MB)
-2. Sarcasm detector: helinivan/english-sarcasm-detector (~300 MB)
+2. Sarcasm detector: cardiffnlp/twitter-roberta-base-irony (~300 MB)
 3. Embedding model: sentence-transformers/all-MiniLM-L6-v2 (~80 MB)
 
 Usage:
@@ -10,6 +10,8 @@ Usage:
 """
 from __future__ import annotations
 
+import os
+os.environ["HF_HUB_OFFLINE"] = "0"
 import sys
 import time
 
@@ -25,7 +27,7 @@ def download_all():
 
     models_to_download = [
         ("Emotion Model", "j-hartmann/emotion-english-distilroberta-base", "classifier"),
-        ("Sarcasm Model", "helinivan/english-sarcasm-detector", "classifier"),
+        ("Sarcasm Model", "cardiffnlp/twitter-roberta-base-irony", "classifier"),
         ("Embedding Model", "sentence-transformers/all-MiniLM-L6-v2", "embedding"),
     ]
 

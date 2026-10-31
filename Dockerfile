@@ -1,11 +1,10 @@
-# Multi-stage, CPU-optimized Dockerfile for P_098 Emotion Detection
+# Multi-stage Dockerfile for P_098 Emotion Detection
 FROM python:3.11-slim as builder
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -39,6 +38,6 @@ USER appuser
 EXPOSE 5000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:5000/health || exit 1
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=4)"
 
-CMD ["python", "-m", "backend.app.main"]
+CMD ["waitress-serve", "--listen=0.0.0.0:5000", "--threads=2", "backend.app.main:app"]

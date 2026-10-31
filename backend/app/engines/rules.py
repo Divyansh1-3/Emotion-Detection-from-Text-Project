@@ -55,6 +55,15 @@ SARCASM_MARKERS = [
     "what an absolute joy", "such a joy", "such a pleasure",
     "couldn't be better", "could not be better",
 ]
+# These expressions are common in sincere praise. They require adverse context.
+CONTEXTUAL_MARKERS = {
+    "thanks a lot", "so much fun", "big surprise", "what a surprise", "can't wait",
+    "cant wait", "obviously", "my favorite", "my favourite", "couldn't be happier",
+    "could not be happier", "what a treat", "what a pleasure", "pure bliss", "pure joy",
+    "such a joy", "such a pleasure", "couldn't be better", "could not be better",
+    "love it when", "love when", "nothing beats", "on my to-do list", "on my todo list",
+    "highlight of my week", "highlight of my day", "highlight of the day",
+}
 ADVERSITY_DOMAINS = {
     # Transit & travel disruptions
     "diverted", "divert", "delayed", "delay", "delays", "stranded", "cancelled", "cancel", "stuck", "towed",
@@ -130,6 +139,8 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
     tokens = set(token_list)
     lower = pre.cleaned.lower()
     cues: list[str] = []
+    has_pos = bool(tokens & PRAISE_TOKENS)
+    has_neg_ctx = bool(tokens & ADVERSITY_DOMAINS)
 
     scores = {label: 0.0 for label in EMOTION_LABELS}
     for label, words in EMOTION_LEXICON.items():
@@ -165,10 +176,17 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
             scores["anger"] += 0.3
             cues.append(f"emoji-:{base}")
 
+    # Idiomatic anticipation/preferences express joy unless adverse context exists.
+    if not has_neg_ctx and any(phrase in lower for phrase in ("can't wait", "cant wait", "couldn't be happier", "could not be happier", "my favorite", "my favourite")):
+        scores["joy"] += 1.0
+        cues.append("idiom:sincere_positive")
+
     # ---- sarcasm cues -------------------------------------------------------
     sar = 0.0
     for marker in SARCASM_MARKERS:
         if marker in lower:
+            if marker in CONTEXTUAL_MARKERS and not has_neg_ctx:
+                continue
             sar += 0.50
             cues.append(f"marker:{marker}")
 
@@ -193,7 +211,7 @@ def analyze_rules(text: str, pre: PreprocessResult | None = None) -> RuleCues:
     if pre.caps_words:
         sar += 0.10
         cues.append(f"caps:{','.join(pre.caps_words[:3])}")
-    if pre.has_negation and (tokens & PRAISE_TOKENS):
+    if pre.has_negation and (tokens & PRAISE_TOKENS) and "idiom:sincere_positive" not in cues:
         sar += 0.30
         cues.append("contrast:negation+positive")
     for name in pre.emoji_names:

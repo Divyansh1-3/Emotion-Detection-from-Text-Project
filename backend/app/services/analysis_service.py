@@ -9,6 +9,8 @@ import csv
 import io
 from typing import Any, Optional
 
+from flask import current_app, has_app_context
+
 from backend.app.core.config import get_settings
 from backend.app.core.logging import emit_request_log
 from backend.app.domain.emotion_schema import AnalysisResult
@@ -19,6 +21,8 @@ _repo: Optional[ResultsRepository] = None
 
 
 def get_repository() -> ResultsRepository:
+    if has_app_context():
+        return current_app.extensions["results_repository"]
     global _repo
     if _repo is None:
         settings = get_settings()
@@ -28,19 +32,24 @@ def get_repository() -> ResultsRepository:
 
 class AnalysisService:
     def __init__(self, repo: ResultsRepository | None = None):
-        self.repo = repo or get_repository()
+        self._repo = repo
+
+    @property
+    def repo(self) -> ResultsRepository:
+        return self._repo if self._repo is not None else get_repository()
 
     def process_single(
         self,
         text: str,
         session_id: str = "",
         options: dict[str, Any] | None = None,
+        mode: str = "single",
     ) -> dict[str, Any]:
         """Execute pipeline for a single text, persist result, and return API response."""
         result: AnalysisResult = execute_pipeline(
             raw_text=text,
             session_id=session_id,
-            mode="single",
+            mode=mode,
             options=options,
         )
 
@@ -75,38 +84,43 @@ class AnalysisService:
     ) -> dict[str, Any]:
         """Process a list of input texts."""
         settings = get_settings()
+        if not isinstance(texts, list) or not texts:
+            raise ValueError("Provide a non-empty list of text strings.")
+        if any(not isinstance(text, str) for text in texts):
+            raise ValueError("Every batch item must be a text string.")
         if len(texts) > settings.max_batch_rows:
-            texts = texts[: settings.max_batch_rows]
+            raise ValueError(f"Batch exceeds maximum of {settings.max_batch_rows} rows; no rows processed.")
 
         results = []
-        for text in texts:
-            if not text or not text.strip():
-                continue
+        for row_number, text in enumerate(texts, start=1):
             try:
-                item_res = self.process_single(text=text, session_id=session_id)
-                results.append(item_res["result"])
-            except Exception as e:
+                item_res = self.process_single(text=text, session_id=session_id, mode="batch")
+                results.append({**item_res["result"], "row_number": row_number})
+            except ValueError as e:
                 results.append({
+                    "row_number": row_number,
                     "input_text": text,
                     "error": str(e),
-                    "primary_emotion": "neutral",
-                    "confidence": 0.0,
-                    "uncertain": True,
-                    "sarcasm": False,
                 })
 
+        failed = sum("error" in result for result in results)
         return {
             "success": True,
             "total_processed": len(results),
+            "total_succeeded": len(results) - failed,
+            "total_failed": failed,
             "results": results,
         }
 
     def process_batch_csv(self, file_content: str, session_id: str = "") -> dict[str, Any]:
         """Parse uploaded CSV and analyze the text column."""
-        reader = csv.reader(io.StringIO(file_content))
-        rows = list(reader)
-        if not rows:
-            return {"success": False, "error": "CSV file is empty"}
+        reader = csv.reader(io.StringIO(file_content.lstrip("\ufeff")), strict=True)
+        try:
+            rows = list(reader)
+        except csv.Error as exc:
+            raise ValueError(f"Invalid CSV: {exc}") from exc
+        if not rows or not any(any(cell.strip() for cell in row) for row in rows):
+            raise ValueError("CSV file is empty")
 
         # Find header index for 'text' or default to column 0 / 1
         header = [h.strip().lower() for h in rows[0]]
@@ -121,9 +135,10 @@ class AnalysisService:
                     break
         elif len(header) > 1 and header[0] in ("id", "index", "#"):
             text_col = 1
+            has_header = True
 
         data_rows = rows[1:] if has_header else rows
-        texts = [r[text_col] for r in data_rows if len(r) > text_col and r[text_col].strip()]
+        texts = [r[text_col] if len(r) > text_col else "" for r in data_rows]
 
         return self.process_batch_texts(texts=texts, session_id=session_id)
 

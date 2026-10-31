@@ -51,6 +51,9 @@ def validate_input_text(raw_text: str) -> tuple[str, list[str]]:
 
     # Prompt injection hygiene: strip zero-width characters and control codes
     cleaned = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", cleaned)
+    cleaned = cleaned.strip()
+    if not cleaned:
+        raise ValueError("Input text cannot be empty after removing control characters.")
 
     warnings: list[str] = []
     # Check for prompt injection heuristic markers

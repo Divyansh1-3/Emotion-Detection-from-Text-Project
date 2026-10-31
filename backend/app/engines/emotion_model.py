@@ -27,6 +27,8 @@ def _load_pipeline(model_name: str):
         if _pipeline is not None or _load_failed:
             return _pipeline
         try:
+            from backend.app.engines.runtime import configure_torch_threads
+            configure_torch_threads()
             from transformers import pipeline
             try:
                 _pipeline = pipeline("text-classification", model=model_name, top_k=None, model_kwargs={"local_files_only": True})
@@ -60,7 +62,7 @@ def predict_emotions(text: str) -> tuple[dict[str, float], str]:
         pipe = _load_pipeline(settings.emotion_model)
         if pipe is not None:
             try:
-                out = pipe(text[:1000])
+                out = pipe(text, truncation=True, max_length=512)
                 rows = out[0] if (out and isinstance(out[0], list)) else out
                 raw = {str(r["label"]).lower(): float(r["score"]) for r in rows}
                 return _normalise({label: raw.get(label, 0.0) for label in EMOTION_LABELS}), "transformer"

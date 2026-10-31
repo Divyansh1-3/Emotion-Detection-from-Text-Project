@@ -150,6 +150,11 @@ def fuse_signals(
     )
 
     warnings = []
+    if ml_backend != "transformer":
+        warnings.append("Emotion model unavailable or disabled; heuristic predictions have lower accuracy.")
+        if not has_rule_signal:
+            uncertain = True
+            warnings.append("No clear emotion cues were found; the fallback prediction requires review.")
     if uncertain:
         warnings.append(
             f"Classification confidence is low (score: {top_score:.2f}, margin: {margin:.2f}). Marked as uncertain."

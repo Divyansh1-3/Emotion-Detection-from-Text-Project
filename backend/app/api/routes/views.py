@@ -35,8 +35,8 @@ def index():
 @views_bp.route("/inspect", methods=["GET"])
 def inspect_list():
     """Backend server-rendered inspection view showing persisted records."""
-    limit = request.args.get("limit", default=30, type=int)
-    offset = request.args.get("offset", default=0, type=int)
+    limit = max(1, min(request.args.get("limit", default=30, type=int), 500))
+    offset = max(0, request.args.get("offset", default=0, type=int))
     analyses = _service.list_results(limit=limit, offset=offset)
     total = _service.count_results()
     stats = _service.get_stats()

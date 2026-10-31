@@ -1,8 +1,9 @@
 # P_098 — Model Evaluation & Performance Report
 
-**Evaluation Date:** Current Run  
-**Test Set Size:** 35 Emotion Cases, 35 Sarcasm Cases  
-**Engine Route:** Hybrid (Preprocess &bull; Rules &bull; Emotion Model &bull; Sarcasm Model &bull; RAG &bull; Fusion)
+**Evaluation Date:** 2026-10-31T18:12:00.335240+00:00
+**Test Set Size:** 35 Emotion Cases, 35 Sarcasm Cases
+**Mode:** hybrid; retrieval=embeddings; LLM=mock; Python=3.11.9
+**Startup:** 49072.6 ms (reported separately from warm latency)
 
 ---
 
@@ -13,8 +14,8 @@
 | **Emotion Classification** | **Macro-F1** | &ge; 0.700 | **0.913** | **PASSED** |
 | **Emotion Classification** | **Accuracy** | &ge; 70.0% | **91.4%** | **PASSED** |
 | **Emotion Classification** | **Weighted-F1**| &ge; 0.700 | **0.913** | **PASSED** |
-| **Sarcasm Detection** | **F1 Score** | &ge; 0.650 | **0.900** | **PASSED** |
-| **Inference Latency** | **Mean Latency** | < 150 ms (CPU) | **4126.7 ms** | **PASSED** |
+| **Sarcasm Detection** | **F1 Score** | &ge; 0.650 | **0.842** | **PASSED** |
+| **Inference Latency** | **Mean Latency** | < 150 ms (CPU) | **219.8 ms** | **FAILED** |
 
 ---
 
@@ -36,21 +37,21 @@
 
 ## 3. Sarcasm Detection Metrics
 
-- **Accuracy:** 88.6%
-- **Precision:** 0.900
-- **Recall:** 0.900
-- **F1 Score:** 0.900
+- **Accuracy:** 82.9%
+- **Precision:** 0.889
+- **Recall:** 0.800
+- **F1 Score:** 0.842
 
-*Key Sarcasm Architectural Rule:* The system surfaces sarcasm as an explicit flag with confidence intensity rather than silently inverting the emotion label.
+*Sarcasm policy:* Detected irony is flagged and can redistribute emotion scores toward anger/disgust. This is a heuristic and may be wrong.
 
 ---
 
 ## 4. Latency Benchmarks (CPU Inference)
 
-- **Mean Pipeline Latency:** `4126.7 ms`
-- **95th Percentile Latency:** `3314.8 ms`
+- **Mean Pipeline Latency:** `219.8 ms`
+- **95th Percentile Latency:** `250.6 ms`
 
-All inference executes within an 8 GB RAM footprint on standard CPU without dedicated GPU acceleration.
+Latency measures the warm pipeline including template rationale, excluding startup, HTTP and persistence. Memory usage is not measured by this script. This small curated sample does not establish general accuracy.
 
 ---
 

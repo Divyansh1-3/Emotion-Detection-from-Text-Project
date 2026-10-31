@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Rationale
     rationaleText.textContent = res.rationale || "No explanation generated.";
-    rationaleSourceBadge.textContent = res.llm_used ? "OpenAI API" : "Offline Template";
+    rationaleSourceBadge.textContent = res.llm_used ? "LLM API" : "Offline Template";
 
     // Render Chart
     renderChart(res.emotion_scores || []);
@@ -242,6 +242,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderChart(scores) {
+    if (typeof Chart === "undefined") {
+      const canvas = document.getElementById("emotionChart");
+      canvas.setAttribute("aria-label", scores.map(s => `${s.label}: ${(s.score * 100).toFixed(1)}%`).join(", "));
+      let fallback = document.getElementById("chartFallback");
+      if (!fallback) {
+        fallback = document.createElement("p");
+        fallback.id = "chartFallback";
+        canvas.parentNode.appendChild(fallback);
+      }
+      fallback.textContent = scores.map(s => `${s.label}: ${(s.score * 100).toFixed(1)}%`).join(" · ");
+      canvas.style.display = "none";
+      return;
+    }
     const ctx = document.getElementById("emotionChart").getContext("2d");
     const labels = scores.map((s) => s.label.charAt(0).toUpperCase() + s.label.slice(1));
     const values = scores.map((s) => (s.score * 100).toFixed(1));
@@ -336,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function handleSelectedFile(file) {
-    if (!file.name.endsWith(".csv")) {
+    if (!file.name.toLowerCase().endsWith(".csv")) {
       alert("Please select a valid CSV file.");
       return;
     }
@@ -380,11 +393,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderBatchResults(data) {
     batchResultsContent.classList.remove("hidden");
-    batchCountBadge.textContent = `${data.total_processed} items processed`;
+    batchCountBadge.textContent = `${data.total_succeeded ?? data.total_processed} succeeded, ${data.total_failed ?? 0} failed`;
 
     batchTableBody.innerHTML = "";
     data.results.forEach((row, idx) => {
       const tr = document.createElement("tr");
+      if (row.error) {
+        tr.innerHTML = `<td>${row.row_number || idx + 1}</td><td>${escapeHtml(row.input_text)}</td><td colspan="4"><span class="status-tag warning">Error: ${escapeHtml(row.error)}</span></td>`;
+        batchTableBody.appendChild(tr);
+        return;
+      }
       const emotion = row.primary_emotion || "neutral";
       const conf = ((row.confidence || 0) * 100).toFixed(0);
       const isSarcastic = row.sarcasm ? "Yes" : "No";

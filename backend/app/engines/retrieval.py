@@ -42,6 +42,8 @@ def _get_embedding_model(model_name: str):
         if _model is not None or _model_failed:
             return _model
         try:
+            from backend.app.engines.runtime import configure_torch_threads
+            configure_torch_threads()
             from sentence_transformers import SentenceTransformer
             try:
                 _model = SentenceTransformer(model_name, local_files_only=True)
@@ -217,3 +219,13 @@ def compute_knn_vote(retrieved: list[RetrievedItem], min_similarity: float = 0.2
     # Uniform neutral prior if no exemplars meet confidence threshold
     uniform = round(1.0 / len(EMOTION_LABELS), 4)
     return {k: uniform for k in EMOTION_LABELS}
+
+
+def retrieval_backend() -> str:
+    if not _index_cache["ready"]:
+        return "not_initialized"
+    if _index_cache["embeddings"] is not None and get_settings().use_models:
+        return "embeddings"
+    if _index_cache["tfidf_matrix"] is not None:
+        return "tfidf"
+    return "keyword"

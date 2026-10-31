@@ -8,9 +8,6 @@ from __future__ import annotations
 import os
 import sys
 
-# Ensure Hugging Face avoids unauthenticated network pings to huggingface.co
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
-
 from backend.app.core.config import get_settings
 
 
@@ -44,7 +41,11 @@ def warm_up_models() -> None:
         sys.stdout.flush()
         initialize_index()
 
-        print("[+] All neural models successfully loaded and ready for instant inference!")
+        from backend.app.engines.emotion_model import is_model_loaded as emotion_loaded
+        from backend.app.engines.sarcasm_model import is_model_loaded as sarcasm_loaded
+        from backend.app.engines.retrieval import retrieval_backend
+        print(f"[+] Ready: emotion={'transformer' if emotion_loaded() else 'heuristic'}, "
+              f"sarcasm={'transformer' if sarcasm_loaded() else 'heuristic'}, retrieval={retrieval_backend()}")
         sys.stdout.flush()
     except Exception as e:
         print(f"[!] Warning during model warm-up: {e}")

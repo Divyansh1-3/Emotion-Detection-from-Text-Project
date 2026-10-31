@@ -10,12 +10,16 @@ Endpoints:
 """
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request
+import csv
+import io
+
+from flask import Blueprint, Response, current_app, jsonify, request
 from pydantic import ValidationError
 
 from backend.app.core.config import get_settings
 from backend.app.engines.emotion_model import is_model_loaded as is_emotion_loaded
 from backend.app.engines.sarcasm_model import is_model_loaded as is_sarcasm_loaded
+from backend.app.engines.retrieval import retrieval_backend
 from backend.app.schemas.analysis import AnalyzeRequest, BatchRequest
 from backend.app.services.analysis_service import AnalysisService
 
@@ -29,7 +33,7 @@ _service = AnalysisService()
 def process_text():
     """POST /api/v1/emotion/process — Analyze a single text input."""
     data = request.get_json(silent=True)
-    if not data:
+    if not isinstance(data, dict) or not data:
         return jsonify({"success": False, "error": "Invalid or missing JSON payload"}), 400
 
     try:
@@ -53,42 +57,42 @@ def process_text():
         return jsonify(response), 200
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
-    except Exception as ex:
-        return jsonify({"success": False, "error": "Internal pipeline error", "detail": str(ex)}), 500
+    except Exception:
+        current_app.logger.exception("Single analysis failed")
+        return jsonify({"success": False, "error": "Internal pipeline error"}), 500
 
 
 @analysis_bp.route("/batch", methods=["POST"])
 def process_batch():
     """POST /api/v1/emotion/batch — Analyze multiple inputs (CSV upload or JSON list)."""
-    # 1. Check for file upload (CSV)
-    if "file" in request.files:
-        uploaded_file = request.files["file"]
-        if uploaded_file.filename == "":
-            return jsonify({"success": False, "error": "No selected file"}), 400
-        content = uploaded_file.read().decode("utf-8", errors="replace")
-        session_id = request.form.get("session_id", "")
-        res = _service.process_batch_csv(file_content=content, session_id=session_id)
-        return jsonify(res), 200
-
-    # 2. Check for JSON body
-    data = request.get_json(silent=True)
-    if data:
-        # Support either 'texts' or 'inputs' field
-        texts = data.get("texts") or data.get("inputs") or []
-        session_id = data.get("session_id", "")
-        if not isinstance(texts, list):
-            return jsonify({"success": False, "error": "'texts' or 'inputs' must be a list"}), 422
-        res = _service.process_batch_texts(texts=texts, session_id=session_id)
-        return jsonify(res), 200
-
-    return jsonify({"success": False, "error": "Provide either a CSV file or JSON list of texts"}), 400
+    try:
+        if "file" in request.files:
+            uploaded = request.files["file"]
+            if not uploaded.filename or not uploaded.filename.lower().endswith(".csv"):
+                raise ValueError("Select a CSV file.")
+            content = uploaded.read().decode("utf-8-sig")
+            result = _service.process_batch_csv(content, request.form.get("session_id", ""))
+        else:
+            data = request.get_json(silent=True)
+            if not isinstance(data, dict):
+                raise ValueError("Provide a JSON object with a 'texts' list or upload a CSV file.")
+            payload = BatchRequest.model_validate(data)
+            result = _service.process_batch_texts(payload.texts, payload.session_id or "")
+        return jsonify(result), 200
+    except ValidationError as exc:
+        details = [{"loc": list(e["loc"]), "msg": e["msg"]} for e in exc.errors()]
+        return jsonify(success=False, error="Invalid batch input", details=details), 422
+    except UnicodeDecodeError:
+        return jsonify(success=False, error="CSV must use UTF-8 encoding"), 400
+    except ValueError as exc:
+        return jsonify(success=False, error=str(exc)), 400
 
 
 @analysis_bp.route("/results", methods=["GET"])
 def list_results():
     """GET /api/v1/emotion/results — Paginated list of persisted analyses."""
-    limit = request.args.get("limit", default=50, type=int)
-    offset = request.args.get("offset", default=0, type=int)
+    limit = max(1, min(request.args.get("limit", default=50, type=int), 500))
+    offset = max(0, request.args.get("offset", default=0, type=int))
     results = _service.list_results(limit=limit, offset=offset)
     total = _service.count_results()
     return jsonify({
@@ -98,6 +102,25 @@ def list_results():
         "offset": offset,
         "results": results,
     }), 200
+
+
+@analysis_bp.route("/export", methods=["GET"])
+def export_results():
+    """Download stored results as CSV; neutralize spreadsheet formula cells."""
+    stream = io.StringIO(newline="")
+    columns = ["id", "request_id", "input_text", "primary_emotion", "confidence", "uncertain", "sarcasm", "rationale", "created_at"]
+    writer = csv.DictWriter(stream, fieldnames=columns)
+    writer.writeheader()
+    offset = 0
+    while records := _service.list_results(limit=500, offset=offset):
+        for record in records:
+            row = {key: record.get(key, "") for key in columns}
+            for key, value in row.items():
+                if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
+                    row[key] = "'" + value
+            writer.writerow(row)
+        offset += len(records)
+    return Response(stream.getvalue(), mimetype="text/csv", headers={"Content-Disposition": "attachment; filename=emotion-results.csv"})
 
 
 @analysis_bp.route("/results/<int:analysis_id>", methods=["GET"])
@@ -128,7 +151,9 @@ def health_check():
             "sarcasm_model": settings.sarcasm_model,
             "sarcasm_loaded": is_sarcasm_loaded(),
             "embedding_model": settings.embedding_model,
+            "retrieval_backend": retrieval_backend(),
         },
+        "degraded": not (is_emotion_loaded() and is_sarcasm_loaded()),
         "llm": {
             "mode": settings.llm_mode,
             "enabled": settings.llm_enabled,

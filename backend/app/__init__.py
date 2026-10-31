@@ -11,6 +11,9 @@ from typing import Any
 from flask import Flask, jsonify
 
 from backend.app.core.config import ROOT, get_settings
+from backend.app.core.logging import configure_logging
+from backend.app.repositories.results_repository import ResultsRepository
+from dataclasses import replace
 
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
@@ -30,10 +33,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     # Core configuration
     app.config["JSON_SORT_KEYS"] = False
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max for batch uploads
-    app.config["SECRET_KEY"] = "p098-emotion-detector-secret-token"
 
     if test_config:
         app.config.update(test_config)
+
+    storage = replace(settings, database_url=app.config.get("DATABASE_URL", settings.database_url))
+    app.extensions["results_repository"] = ResultsRepository(storage.sqlite_path)
+    if not app.testing:
+        configure_logging(settings.logs_dir)
 
     # Ensure required directories exist
     settings.data_dir.mkdir(parents=True, exist_ok=True)
@@ -56,5 +63,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @app.errorhandler(500)
     def internal_error(e):
         return jsonify({"success": False, "error": "Internal server error"}), 500
+
+    @app.errorhandler(413)
+    def too_large(e):
+        return jsonify({"success": False, "error": "Upload exceeds the 16 MB request limit"}), 413
 
     return app
