@@ -2,7 +2,9 @@
 
 A small English-only machine-learning project by **Divyansh Yadav** for HCL Industrial Training.
 
-Enter a sentence, click **Detect emotion**, and see the predicted emotion with a simple score chart. The six emotions are **joy, sadness, anger, fear, love, and surprise**.
+Enter a sentence, click **Analyze emotion**, and explore the result in a dashboard with input and output side by side. The six emotions are **joy, sadness, anger, fear, love, and surprise**.
+
+The dashboard includes session summary cards, a color-coded score chart, an explanation based on contributing words, the 10 most recent analyses, and a **Save result** text download. **Clear text** clears the input; **Reset session** clears the results and summary counts. Everything runs locally without an API key.
 
 ## Run on your computer
 
@@ -46,15 +48,16 @@ Free apps can sleep when unused. The first visitor may need to wake the app and 
 1. Check that the input contains words and is at most 1,000 characters.
 2. **TF-IDF** converts words and pairs of words into numbers.
 3. **Logistic regression** uses those numbers to score the six emotions.
-4. Streamlit shows the highest-scoring emotion and a bar chart.
+4. Streamlit shows the highest-scoring emotion, a bar chart, and words with positive contributions to that emotion's linear-model score. The explanation is generated locally from those weights, not by an external AI service.
 
-The saved model loads once, on the first prediction, and is reused. Input and results remain in the current browser session; the application does not save them to files or a database.
+The saved model loads once, on the first prediction, and is reused. Input and the latest 10 results remain in the current session's memory; the app does not write them to a database or log. **Save result** lets you explicitly download the current result to your computer. Session counters cover all successful analyses since the last reset, including those no longer in the recent list.
 
 ## Main files
 
 | File | Purpose |
 |---|---|
 | `app.py` | Streamlit page |
+| `styles.css` | Small local stylesheet for the dashboard |
 | `emotion_model.py` | Input checks and prediction |
 | `model/emotion_model.pkl.gz` | Small, already-trained model |
 | `train_model.py` | Optional training and evaluation |

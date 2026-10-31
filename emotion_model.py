@@ -45,9 +45,26 @@ def predict_emotion(text):
     scores = dict(zip(classifier.classes_, map(float, probabilities)))
     ranked = sorted(scores, key=scores.get, reverse=True)
     best, second = ranked[:2]
+    # Positive TF-IDF x coefficient contributions explain this model's choice.
+    class_index = list(classifier.classes_).index(best)
+    names = model.named_steps["tfidf"].get_feature_names_out()
+    contributions = features.data * classifier.coef_[class_index, features.indices]
+    ordered = sorted(zip(features.indices, contributions), key=lambda item: item[1], reverse=True)
+    keywords = []
+    used_words = set()
+    for feature_index, contribution in ordered:
+        phrase = str(names[feature_index])
+        words = set(phrase.split())
+        if contribution > 0 and not words.intersection(used_words):
+            keywords.append(phrase)
+            used_words.update(words)
+        if len(keywords) == 3:
+            break
     return {
         "emotion": best,
         "score": scores[best],
         "scores": scores,
         "uncertain": scores[best] < 0.45 or scores[best] - scores[second] < 0.10,
+        "keywords": keywords,
+        "runner_up": second,
     }

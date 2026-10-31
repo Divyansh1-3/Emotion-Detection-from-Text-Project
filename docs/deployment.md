@@ -6,7 +6,7 @@
 4. Choose repository `Divyansh1-3/Emotion-Detection-from-Text-Project`, branch `main`, and main file `app.py`.
 5. In **Advanced settings**, choose **Python 3.13**. Leave secrets empty.
 6. Select **Deploy**. Wait for the first package installation to finish.
-7. Open the resulting `streamlit.app` URL. Select the Joy example and click **Detect emotion**. Confirm that Joy and the score chart appear. Share that verified URL with your teacher.
+7. Open the resulting `streamlit.app` URL. Select the Joy example and click **Analyze emotion**. Confirm that Joy, its score chart, and a recent-history entry appear. Share that verified URL with your teacher.
 
 The app uses Community Cloud's free hosting and no paid AI services. Initial deployment installs Python packages and takes longer than an ordinary visit. The laptop does not need to stay on once the cloud app is deployed. Free hosting has resource limits and may put an inactive app to sleep; an always-instant first visit is not guaranteed.
 
