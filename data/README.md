@@ -1,4 +1,8 @@
-# English emotion dataset
+# Historical English emotion dataset
+
+These compressed files were used for the earlier TF-IDF baseline. The current
+pretrained transformer dashboard does not train on or load them. Its small
+regression set is documented in [regression/README.md](regression/README.md).
 
 Source: [DAIR-AI Emotion on Hugging Face](https://huggingface.co/datasets/dair-ai/emotion), `split` configuration.
 
@@ -8,7 +12,7 @@ Source: [DAIR-AI Emotion on Hugging Face](https://huggingface.co/datasets/dair-a
 - Labels: anger, fear, joy, love, sadness, surprise.
 - `source.json` records the exact upstream revision, URLs, and original file hashes.
 
-The upstream Parquet files were converted to compressed CSV without changing their texts or labels. This lets the training script read them with Python's standard library. There is no runtime data download. The app only loads the fitted model.
+The upstream Parquet files were converted to compressed CSV without changing their texts or labels. The historical training script reads them with Python's standard library. The current app downloads pretrained transformer weights on first use instead.
 
 The dataset was automatically labelled and may contain errors, informal language, and offensive text. Its test score measures performance on this dataset, not every kind of English writing. Exact training duplicates are excluded from test scoring by `train_model.py`.
 

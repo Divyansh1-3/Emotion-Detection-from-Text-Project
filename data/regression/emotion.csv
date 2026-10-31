@@ -1,0 +1,36 @@
+id,text,gold_emotion
+1,"I am beyond thrilled with these examination results! Best day ever! 🎉",joy
+2,"So glad to see my entire family together around the dinner table laughing.",joy
+3,"Winning first place in the science fair was a dream come true for me.",joy
+4,"I truly love spending sunny Saturday afternoons reading in the garden.",joy
+5,"Heartiest congratulations on your wedding day, wishing both of you immense happiness!",joy
+6,"Stop ignoring my messages! You stole credit for my work and I will not let this slide.",anger
+7,"I am furious that our flight was cancelled with zero explanation or compensation.",anger
+8,"Get out of my face before I completely lose my temper with you!",anger
+9,"This billing error has happened for three straight months. Your support is atrocious.",anger
+10,"You cheated on the exam and blamed it on me. I despise dishonesty.",anger
+11,"The smell of rotting seafood in the summer heat was completely nauseating.",disgust
+12,"Finding a cockroach cooked into my soup made me want to throw up instantly.",disgust
+13,"Watching him mistreat the stray dog was utterly despicable and revolting.",disgust
+14,"The slimy texture and sour milk odor made it totally unpalatable.",disgust
+15,"Corrupt politicians stealing disaster relief funds disgusts me to my core.",disgust
+16,"I am walking alone on a dark street and somebody is following my footsteps.",fear
+17,"The turbulence shook the airplane so violently I thought the wing snapped.",fear
+18,"I have my major surgery scheduled for 8 AM and I cannot sleep from sheer dread.",fear
+19,"What if the biopsy results come back malignant? I am so terrified.",fear
+20,"Smoke is filling up the hallway and the fire alarms are screeching loudly.",fear
+21,"The train leaves at 9:15 AM from platform 2 and reaches Manchester at noon.",neutral
+22,"Water freezes at 0 degrees Celsius and boils at 100 degrees at sea level.",neutral
+23,"Please submit the weekly report before 5 PM on Friday via the intranet portal.",neutral
+24,"The library opens from Monday to Saturday between 9 AM and 6 PM.",neutral
+25,"The average precipitation in August was measured at forty-two millimeters.",neutral
+26,"My grandmother was my best friend and now that she is gone the world feels cold.",sadness
+27,"I was laid off from my job today after eight years of devoted service.",sadness
+28,"Sitting alone in my dark apartment, weeping quietly because nobody cares.",sadness
+29,"It breaks my heart to see all our hard work get dismantled and discarded.",sadness
+30,"I feel so hopeless and defeated, like nothing I do will ever turn out right.",sadness
+31,"Good heavens! I never expected you to fly halfway across the globe to visit me!",surprise
+32,"Holy cow, the underdog team scored three goals in injury time to win!",surprise
+33,"Whoa, wait a second! Are you telling me we actually won the lottery jackpot?!",surprise
+34,"I was utterly dumbfounded when the magician made the statue vanish right in front of us.",surprise
+35,"What a shocking revelation, nobody in the committee saw that coming at all!",surprise

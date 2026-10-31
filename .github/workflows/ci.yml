@@ -1,4 +1,4 @@
-name: Test Streamlit app
+name: Test transformer dashboard
 
 on: [push, pull_request]
 
@@ -12,4 +12,14 @@ jobs:
           python-version: '3.13'
           cache: pip
       - run: pip install -r requirements.txt
-      - run: python -m unittest discover -s tests -v
+      - name: Contract and dashboard tests (controlled model outputs)
+        run: python -m unittest discover -s tests -v
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: transformer-models-0e1cd914-3bf8f118
+      - name: Real pretrained model integration
+        env:
+          RUN_TRANSFORMER_TESTS: '1'
+          HF_HUB_DISABLE_PROGRESS_BARS: '1'
+        run: python -m unittest discover -s tests -p test_transformers.py -v

@@ -1,4 +1,8 @@
-"""Optional: rebuild and evaluate the small model. The app does not run this."""
+"""Historical TF-IDF baseline only; does not train the app's transformers.
+
+Requires scikit-learn==1.9.1 separately. Its output is not used by app.py.
+Use evaluate_transformers.py to check the current pretrained model pair.
+"""
 
 import csv
 import gzip

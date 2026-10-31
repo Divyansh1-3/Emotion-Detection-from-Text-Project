@@ -1,0 +1,2554 @@
+{
+  "method": "Two pretrained transformers; CPU float16; no fallback or rule fusion",
+  "scope": "Small hand-written project regression set reused from the earlier project. Not an independent benchmark or generalization estimate.",
+  "versions": {
+    "python": "3.11.9",
+    "torch": "2.14.0",
+    "transformers": "5.18.0"
+  },
+  "models": {
+    "emotion": {
+      "id": "j-hartmann/emotion-english-distilroberta-base",
+      "revision": "0e1cd914e3d46199ed785853e12b57304e04178b"
+    },
+    "sarcasm": {
+      "id": "cardiffnlp/twitter-roberta-base-irony",
+      "revision": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+    }
+  },
+  "emotion": {
+    "cases": 35,
+    "accuracy": 0.9142857142857143,
+    "macro_f1": 0.9126984126984128
+  },
+  "sarcasm_raw_argmax": {
+    "cases": 35,
+    "accuracy": 0.8571428571428571,
+    "macro_f1": 0.8444444444444444
+  },
+  "sarcasm_display_counts": {
+    "Likely sarcasm": 22,
+    "Sarcasm not detected": 2,
+    "Uncertain": 11
+  },
+  "first_prediction_seconds": 17.666921600000933,
+  "warm_mean_ms": 524.1856499999163,
+  "warm_p95_ms": 661.2980999998399,
+  "timing_scope": "Local Python inference including both models, excluding Streamlit rendering, HTTP and first model download.",
+  "sarcastic_example": {
+    "emotion": "sadness",
+    "score": 0.6743704814800533,
+    "scores": {
+      "anger": 0.04798830771422272,
+      "disgust": 0.060674012950461625,
+      "fear": 0.0327491580699398,
+      "joy": 0.010731192525556531,
+      "neutral": 0.0850070881379358,
+      "sadness": 0.6743704814800533,
+      "surprise": 0.0884797591218303
+    },
+    "uncertain": false,
+    "runner_up": "surprise",
+    "sarcasm": {
+      "score": 0.9142141597638219,
+      "detected": true,
+      "uncertain": false,
+      "label": "Likely sarcasm"
+    },
+    "backend": "pretrained_transformers",
+    "models": {
+      "emotion": "j-hartmann/emotion-english-distilroberta-base",
+      "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+    },
+    "revisions": {
+      "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+      "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+    }
+  },
+  "user_reported_sarcastic_example": {
+    "text": "I am busy right now, can I ignore you some other time?",
+    "result": {
+      "emotion": "sadness",
+      "score": 0.5693560968611616,
+      "scores": {
+        "anger": 0.021990264336356407,
+        "disgust": 0.02674642080002214,
+        "fear": 0.01172465205868145,
+        "joy": 0.005669670774514726,
+        "neutral": 0.33865258870365883,
+        "sadness": 0.5693560968611616,
+        "surprise": 0.025860306465604815
+      },
+      "uncertain": false,
+      "runner_up": "neutral",
+      "sarcasm": {
+        "score": 0.04031343698034529,
+        "detected": false,
+        "uncertain": false,
+        "label": "Sarcasm not detected"
+      },
+      "backend": "pretrained_transformers",
+      "models": {
+        "emotion": "j-hartmann/emotion-english-distilroberta-base",
+        "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+      },
+      "revisions": {
+        "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+        "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+      }
+    },
+    "known_limitation": "The user identifies this as sarcastic; the pretrained irony model may miss its dry humor. This example is reported separately, not used to tune thresholds."
+  },
+  "cases": [
+    {
+      "task": "emotion",
+      "text": "I am beyond thrilled with these examination results! Best day ever! 🎉",
+      "expected": "joy",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9603528458653832,
+        "scores": {
+          "anger": 0.0029887038060940414,
+          "disgust": 0.0006507861015334524,
+          "fear": 0.0016537459003462239,
+          "joy": 0.9603528458653832,
+          "neutral": 0.0063720411208973825,
+          "sadness": 0.001082436772502327,
+          "surprise": 0.026899440433243386
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.474265920436449,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "So glad to see my entire family together around the dinner table laughing.",
+      "expected": "joy",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9911834524233941,
+        "scores": {
+          "anger": 0.000846597367067321,
+          "disgust": 0.0007845052803038706,
+          "fear": 0.000239494371468123,
+          "joy": 0.9911834524233941,
+          "neutral": 0.0024021825062150452,
+          "sadness": 0.0011962277705360163,
+          "surprise": 0.003347540281015471
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.9432953594773221,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Winning first place in the science fair was a dream come true for me.",
+      "expected": "joy",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9685681447065819,
+        "scores": {
+          "anger": 0.001878928506587919,
+          "disgust": 0.0008280892494158813,
+          "fear": 0.015762833853624963,
+          "joy": 0.9685681447065819,
+          "neutral": 0.0036931615264786315,
+          "sadness": 0.002118734173872169,
+          "surprise": 0.0071501079834384775
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.9402434159206272,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I truly love spending sunny Saturday afternoons reading in the garden.",
+      "expected": "joy",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9881020832115593,
+        "scores": {
+          "anger": 0.0007318191382068319,
+          "disgust": 0.0005666115930669919,
+          "fear": 0.00026634469524180804,
+          "joy": 0.9881020832115593,
+          "neutral": 0.0016078334379388355,
+          "sadness": 0.006687101474673803,
+          "surprise": 0.0020382064493123402
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.9139841215748868,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Heartiest congratulations on your wedding day, wishing both of you immense happiness!",
+      "expected": "joy",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9437875754553163,
+        "scores": {
+          "anger": 0.0018542479976916906,
+          "disgust": 0.0006955936995459537,
+          "fear": 0.00046246120517323566,
+          "joy": 0.9437875754553163,
+          "neutral": 0.014952546009469036,
+          "sadness": 0.006172950773896502,
+          "surprise": 0.03207462485890724
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.11279541254043579,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Stop ignoring my messages! You stole credit for my work and I will not let this slide.",
+      "expected": "anger",
+      "result": {
+        "emotion": "anger",
+        "score": 0.9616961416491558,
+        "scores": {
+          "anger": 0.9616961416491558,
+          "disgust": 0.013128076594419278,
+          "fear": 0.0038316976029222054,
+          "joy": 0.0006390914744943005,
+          "neutral": 0.013432838866459325,
+          "sadness": 0.005270659889192675,
+          "surprise": 0.0020014939233563307
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.10608712154886489,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I am furious that our flight was cancelled with zero explanation or compensation.",
+      "expected": "anger",
+      "result": {
+        "emotion": "anger",
+        "score": 0.99129740324087,
+        "scores": {
+          "anger": 0.99129740324087,
+          "disgust": 0.001633641374317322,
+          "fear": 0.0019006172244447077,
+          "joy": 0.0003645146641887208,
+          "neutral": 0.0020716808154513265,
+          "sadness": 0.0015204923127226534,
+          "surprise": 0.0012116503680052496
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.3071501438111153,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Get out of my face before I completely lose my temper with you!",
+      "expected": "anger",
+      "result": {
+        "emotion": "anger",
+        "score": 0.9376161522065112,
+        "scores": {
+          "anger": 0.9376161522065112,
+          "disgust": 0.017185620647467665,
+          "fear": 0.021351331452197586,
+          "joy": 0.0022155243961544642,
+          "neutral": 0.007407702369334063,
+          "sadness": 0.006040089186940564,
+          "surprise": 0.008183579741394427
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.053973902620083496,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "This billing error has happened for three straight months. Your support is atrocious.",
+      "expected": "anger",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.8204540833337266,
+        "scores": {
+          "anger": 0.06692083361861467,
+          "disgust": 0.8204540833337266,
+          "fear": 0.022740889958804217,
+          "joy": 0.0004954685708149233,
+          "neutral": 0.045926646646562964,
+          "sadness": 0.03890138225204692,
+          "surprise": 0.0045606956194297445
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.32893349740107364,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "You cheated on the exam and blamed it on me. I despise dishonesty.",
+      "expected": "anger",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.5483942582579339,
+        "scores": {
+          "anger": 0.4004309740347556,
+          "disgust": 0.5483942582579339,
+          "fear": 0.006829505729850509,
+          "joy": 0.0018507450433211752,
+          "neutral": 0.01940208843704915,
+          "sadness": 0.021433431478010766,
+          "surprise": 0.0016589970190789565
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.24963013081640395,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "The smell of rotting seafood in the summer heat was completely nauseating.",
+      "expected": "disgust",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.9846266737073949,
+        "scores": {
+          "anger": 0.0018351134286288743,
+          "disgust": 0.9846266737073949,
+          "fear": 0.004073862793408654,
+          "joy": 0.00042164279770541514,
+          "neutral": 0.0036061597749979116,
+          "sadness": 0.004899360650022843,
+          "surprise": 0.0005371868478413944
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.4779348658284465,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Finding a cockroach cooked into my soup made me want to throw up instantly.",
+      "expected": "disgust",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.9534445433310927,
+        "scores": {
+          "anger": 0.018616459854021883,
+          "disgust": 0.9534445433310927,
+          "fear": 0.01942433366011667,
+          "joy": 0.0007221910337431706,
+          "neutral": 0.0026159928246787196,
+          "sadness": 0.0024695267680451723,
+          "surprise": 0.0027069525283016584
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.3211272561214192,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Watching him mistreat the stray dog was utterly despicable and revolting.",
+      "expected": "disgust",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.9404399931915384,
+        "scores": {
+          "anger": 0.04192978117333164,
+          "disgust": 0.9404399931915384,
+          "fear": 0.011809525005785474,
+          "joy": 0.00032804987652754723,
+          "neutral": 0.002384069127875877,
+          "sadness": 0.002574020049185832,
+          "surprise": 0.0005345615757552062
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.49478168801123834,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "The slimy texture and sour milk odor made it totally unpalatable.",
+      "expected": "disgust",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.9608420705437977,
+        "scores": {
+          "anger": 0.0024959890423312406,
+          "disgust": 0.9608420705437977,
+          "fear": 0.00333909785240775,
+          "joy": 0.0026106700012906783,
+          "neutral": 0.02137337487056661,
+          "sadness": 0.00858936589644251,
+          "surprise": 0.0007494317931635388
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.27192787146353337,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Corrupt politicians stealing disaster relief funds disgusts me to my core.",
+      "expected": "disgust",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.9841194882634969,
+        "scores": {
+          "anger": 0.0100127236415848,
+          "disgust": 0.9841194882634969,
+          "fear": 0.0012779572453817246,
+          "joy": 0.00028851209600500147,
+          "neutral": 0.0022472699943893557,
+          "sadness": 0.001581151758390417,
+          "surprise": 0.00047289700075177533
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.8709818384343934,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I am walking alone on a dark street and somebody is following my footsteps.",
+      "expected": "fear",
+      "result": {
+        "emotion": "fear",
+        "score": 0.9936638899307866,
+        "scores": {
+          "anger": 0.0012139499676804297,
+          "disgust": 0.0007280751471692787,
+          "fear": 0.9936638899307866,
+          "joy": 0.0005884627360975736,
+          "neutral": 0.000658403779677609,
+          "sadness": 0.0016503845988473714,
+          "surprise": 0.0014968338397411388
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.1346051950870396,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "The turbulence shook the airplane so violently I thought the wing snapped.",
+      "expected": "fear",
+      "result": {
+        "emotion": "fear",
+        "score": 0.8979634358073938,
+        "scores": {
+          "anger": 0.03656010084027774,
+          "disgust": 0.010955913372438189,
+          "fear": 0.8979634358073938,
+          "joy": 0.0022476719075122647,
+          "neutral": 0.008161645665784647,
+          "sadness": 0.0047536768737011246,
+          "surprise": 0.039357555532892184
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.2606246095709619,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I have my major surgery scheduled for 8 AM and I cannot sleep from sheer dread.",
+      "expected": "fear",
+      "result": {
+        "emotion": "fear",
+        "score": 0.9917227706663071,
+        "scores": {
+          "anger": 0.0009339524043463948,
+          "disgust": 0.0007112076913221435,
+          "fear": 0.9917227706663071,
+          "joy": 0.0007402615798425756,
+          "neutral": 0.0016845759374462435,
+          "sadness": 0.0031280517833032206,
+          "surprise": 0.0010791799374323566
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.184033144472054,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "What if the biopsy results come back malignant? I am so terrified.",
+      "expected": "fear",
+      "result": {
+        "emotion": "fear",
+        "score": 0.9921337681995455,
+        "scores": {
+          "anger": 0.0011392004452146732,
+          "disgust": 0.0010271737446230858,
+          "fear": 0.9921337681995455,
+          "joy": 0.0007655702891507505,
+          "neutral": 0.0021883738923957874,
+          "sadness": 0.0016819858527769255,
+          "surprise": 0.00106392757629326
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.0562363441096102,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Smoke is filling up the hallway and the fire alarms are screeching loudly.",
+      "expected": "fear",
+      "result": {
+        "emotion": "fear",
+        "score": 0.7515620249782147,
+        "scores": {
+          "anger": 0.056377255605257214,
+          "disgust": 0.11961319502327596,
+          "fear": 0.7515620249782147,
+          "joy": 0.0020863892499451723,
+          "neutral": 0.04060206006355592,
+          "sadness": 0.010554250784328987,
+          "surprise": 0.01920482429542208
+        },
+        "uncertain": false,
+        "runner_up": "disgust",
+        "sarcasm": {
+          "score": 0.5259775676124563,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "The train leaves at 9:15 AM from platform 2 and reaches Manchester at noon.",
+      "expected": "neutral",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.8607555880339826,
+        "scores": {
+          "anger": 0.0060602791522618325,
+          "disgust": 0.0029449040002790055,
+          "fear": 0.019709036332401116,
+          "joy": 0.015600649166312486,
+          "neutral": 0.8607555880339826,
+          "sadness": 0.011433201246099397,
+          "surprise": 0.08349634206866359
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.4020545722278698,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Water freezes at 0 degrees Celsius and boils at 100 degrees at sea level.",
+      "expected": "neutral",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.45619596304165283,
+        "scores": {
+          "anger": 0.3238074570450187,
+          "disgust": 0.1273011153148328,
+          "fear": 0.022089236091480093,
+          "joy": 0.005228751017011846,
+          "neutral": 0.45619596304165283,
+          "sadness": 0.05427573397861249,
+          "surprise": 0.011101743511391276
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.1647179028559981,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Please submit the weekly report before 5 PM on Friday via the intranet portal.",
+      "expected": "neutral",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.9457697421332687,
+        "scores": {
+          "anger": 0.007341922379468977,
+          "disgust": 0.0028639287731196867,
+          "fear": 0.005684490046940865,
+          "joy": 0.003956803864978444,
+          "neutral": 0.9457697421332687,
+          "sadness": 0.008619276399325321,
+          "surprise": 0.025763836402898005
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.25478701264935655,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "The library opens from Monday to Saturday between 9 AM and 6 PM.",
+      "expected": "neutral",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.8532161231901725,
+        "scores": {
+          "anger": 0.005342911627845696,
+          "disgust": 0.005654271839108833,
+          "fear": 0.013076153778371118,
+          "joy": 0.06569665300227003,
+          "neutral": 0.8532161231901725,
+          "sadness": 0.013314538816428186,
+          "surprise": 0.04369934774580361
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.6492729187011719,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "The average precipitation in August was measured at forty-two millimeters.",
+      "expected": "neutral",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.8880381551655943,
+        "scores": {
+          "anger": 0.01110801674033583,
+          "disgust": 0.022728268311034524,
+          "fear": 0.00468280598903703,
+          "joy": 0.006714364038508696,
+          "neutral": 0.8880381551655943,
+          "sadness": 0.01643262314714551,
+          "surprise": 0.050295766608344145
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.4404391813147312,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "My grandmother was my best friend and now that she is gone the world feels cold.",
+      "expected": "sadness",
+      "result": {
+        "emotion": "anger",
+        "score": 0.7436195992856082,
+        "scores": {
+          "anger": 0.7436195992856082,
+          "disgust": 0.0834725541910068,
+          "fear": 0.010954564067070394,
+          "joy": 0.001668491951904313,
+          "neutral": 0.02254875864850518,
+          "sadness": 0.1342381605721068,
+          "surprise": 0.0034978712837984045
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.059976437465321976,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I was laid off from my job today after eight years of devoted service.",
+      "expected": "sadness",
+      "result": {
+        "emotion": "sadness",
+        "score": 0.9917115410115398,
+        "scores": {
+          "anger": 0.0013695351202418133,
+          "disgust": 0.001166858505093788,
+          "fear": 0.0012169007915243137,
+          "joy": 0.001763677439484158,
+          "neutral": 0.0014310617772961963,
+          "sadness": 0.9917115410115398,
+          "surprise": 0.0013404253548199565
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.782828557747177,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Sitting alone in my dark apartment, weeping quietly because nobody cares.",
+      "expected": "sadness",
+      "result": {
+        "emotion": "sadness",
+        "score": 0.970677589637932,
+        "scores": {
+          "anger": 0.0021379134457969536,
+          "disgust": 0.0075068183158423845,
+          "fear": 0.010170197481378124,
+          "joy": 0.0011058901835728852,
+          "neutral": 0.006790958124352272,
+          "sadness": 0.970677589637932,
+          "surprise": 0.0016106328111253879
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.22826401079487832,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "It breaks my heart to see all our hard work get dismantled and discarded.",
+      "expected": "sadness",
+      "result": {
+        "emotion": "sadness",
+        "score": 0.9769320194451042,
+        "scores": {
+          "anger": 0.005105235771973701,
+          "disgust": 0.007878480723089989,
+          "fear": 0.0017407899097364996,
+          "joy": 0.0008702102619544521,
+          "neutral": 0.0033034387601905864,
+          "sadness": 0.9769320194451042,
+          "surprise": 0.004169825127950577
+        },
+        "uncertain": false,
+        "runner_up": "disgust",
+        "sarcasm": {
+          "score": 0.23113663382152522,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I feel so hopeless and defeated, like nothing I do will ever turn out right.",
+      "expected": "sadness",
+      "result": {
+        "emotion": "sadness",
+        "score": 0.9831701142531141,
+        "scores": {
+          "anger": 0.0009231892971597995,
+          "disgust": 0.0036105083649318396,
+          "fear": 0.0019259716352302944,
+          "joy": 0.0012557037690396745,
+          "neutral": 0.007864925256215856,
+          "sadness": 0.9831701142531141,
+          "surprise": 0.0012495874243084303
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.08795474600724497,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Good heavens! I never expected you to fly halfway across the globe to visit me!",
+      "expected": "surprise",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.6978756052044945,
+        "scores": {
+          "anger": 0.012210112756175331,
+          "disgust": 0.0018740821028221544,
+          "fear": 0.002325509861925248,
+          "joy": 0.2664403266938851,
+          "neutral": 0.015083919913836003,
+          "sadness": 0.004190443466861623,
+          "surprise": 0.6978756052044945
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.1755380735122009,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Holy cow, the underdog team scored three goals in injury time to win!",
+      "expected": "surprise",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.8329369058568391,
+        "scores": {
+          "anger": 0.020895483546347137,
+          "disgust": 0.010423871043607775,
+          "fear": 0.004702997523116346,
+          "joy": 0.10203832668264456,
+          "neutral": 0.024206659490332433,
+          "sadness": 0.004795755857112629,
+          "surprise": 0.8329369058568391
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.7707237371586639,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "Whoa, wait a second! Are you telling me we actually won the lottery jackpot?!",
+      "expected": "surprise",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.9087701862400501,
+        "scores": {
+          "anger": 0.04008484927775393,
+          "disgust": 0.017710629512492655,
+          "fear": 0.004958755242028756,
+          "joy": 0.01088924778324591,
+          "neutral": 0.01231806422349036,
+          "sadness": 0.005268267720938205,
+          "surprise": 0.9087701862400501
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.5145832589517081,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "I was utterly dumbfounded when the magician made the statue vanish right in front of us.",
+      "expected": "surprise",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.8903462836081067,
+        "scores": {
+          "anger": 0.018655330450166225,
+          "disgust": 0.0076132620742223765,
+          "fear": 0.07160054372172578,
+          "joy": 0.0014932955461767943,
+          "neutral": 0.004796937225236461,
+          "sadness": 0.005494347374365576,
+          "surprise": 0.8903462836081067
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.549368646778545,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "emotion",
+      "text": "What a shocking revelation, nobody in the committee saw that coming at all!",
+      "expected": "surprise",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.9463259280300699,
+        "scores": {
+          "anger": 0.007303321504511777,
+          "disgust": 0.005270669071110822,
+          "fear": 0.028772582326946173,
+          "joy": 0.004358883344463713,
+          "neutral": 0.0063020082072422125,
+          "sadness": 0.0016666075156554546,
+          "surprise": 0.9463259280300699
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.7075057625770569,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Oh perfect, another flat tire on the way to my interview. Just my lucky day!",
+      "expected": "1",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.6840508525260365,
+        "scores": {
+          "anger": 0.011357607228719292,
+          "disgust": 0.004312966449931883,
+          "fear": 0.0016370174576348852,
+          "joy": 0.15717017524354834,
+          "neutral": 0.12457491357395553,
+          "sadness": 0.016896467520173607,
+          "surprise": 0.6840508525260365
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.9721515504619627,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Great job spilling red wine all over the brand new white rug. Truly masterful.",
+      "expected": "1",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.8489738497200234,
+        "scores": {
+          "anger": 0.010624566789494142,
+          "disgust": 0.045413332822968576,
+          "fear": 0.0048880911179907905,
+          "joy": 0.06921326201451494,
+          "neutral": 0.8489738497200234,
+          "sadness": 0.0064567242116901746,
+          "surprise": 0.01443017332331789
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.9612074077354261,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I just love waiting on hold with customer support for two hours listening to elevator music.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9605398108174537,
+        "scores": {
+          "anger": 0.0029214650130073177,
+          "disgust": 0.0034897136085096573,
+          "fear": 0.0007535987364324049,
+          "joy": 0.9605398108174537,
+          "neutral": 0.022174448989457248,
+          "sadness": 0.0057073969726136745,
+          "surprise": 0.004413565862526039
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.9897513979525208,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Wow, thank you so much for deleting my draft without saving. You are such a genius.",
+      "expected": "1",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.9530449917053747,
+        "scores": {
+          "anger": 0.0043175554911158475,
+          "disgust": 0.001960380662551067,
+          "fear": 0.0016718972143458055,
+          "joy": 0.024857952698849613,
+          "neutral": 0.01131154946948362,
+          "sadness": 0.002835672758279325,
+          "surprise": 0.9530449917053747
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.9827406672959551,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Oh fantastic, rain on our outdoor wedding. Nature really loves us.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9491748875468101,
+        "scores": {
+          "anger": 0.0012741914703962502,
+          "disgust": 0.001058406952298789,
+          "fear": 0.0011037982150652512,
+          "joy": 0.9491748875468101,
+          "neutral": 0.00787811868573807,
+          "sadness": 0.0032776806534632677,
+          "surprise": 0.03623291647622828
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.9837225391031861,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Sure, because waking up at 4 AM to shovel snow in freezing wind is absolute paradise.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.5816374670298058,
+        "scores": {
+          "anger": 0.020295082529609834,
+          "disgust": 0.015447224220793986,
+          "fear": 0.0041555344976061835,
+          "joy": 0.5816374670298058,
+          "neutral": 0.3366259480684936,
+          "sadness": 0.014398397563329234,
+          "surprise": 0.027440346090361403
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.980839292664946,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Don't you just adore it when the bus splashes muddy water all over your clean suit?",
+      "expected": "1",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.6218414214441587,
+        "scores": {
+          "anger": 0.06576600458625928,
+          "disgust": 0.6218414214441587,
+          "fear": 0.009628393536126462,
+          "joy": 0.0077215355558074945,
+          "neutral": 0.2579594165482272,
+          "sadness": 0.0246109870645738,
+          "surprise": 0.012472241264847098
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.9368073097172123,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Thank you so much for the thoughtful birthday present, I really love it!",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9506264763879828,
+        "scores": {
+          "anger": 0.0032651088297352858,
+          "disgust": 0.0009548517846568431,
+          "fear": 0.0005467211844936741,
+          "joy": 0.9506264763879828,
+          "neutral": 0.012882266783007752,
+          "sadness": 0.004731029022868537,
+          "surprise": 0.026993546007255044
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.15533455410605165,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The team won the match after playing exceptionally well in the second half.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.7784611324475353,
+        "scores": {
+          "anger": 0.038324470291557486,
+          "disgust": 0.031111963923681794,
+          "fear": 0.00182692013673109,
+          "joy": 0.7784611324475353,
+          "neutral": 0.13997989428529167,
+          "sadness": 0.004404004982772583,
+          "surprise": 0.005891613932430049
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.8841893672943115,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I received my graduation certificate today and celebrated with my parents.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9907252446046718,
+        "scores": {
+          "anger": 0.0013675051609977004,
+          "disgust": 0.0004779345310620004,
+          "fear": 0.0005614971210111069,
+          "joy": 0.9907252446046718,
+          "neutral": 0.0014728610172704034,
+          "sadness": 0.0013093501253188978,
+          "surprise": 0.004085607439668028
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.588682234287262,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Please make sure to back up your database before initiating the migration.",
+      "expected": "0",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.9577286293830122,
+        "scores": {
+          "anger": 0.005892876298829759,
+          "disgust": 0.008540657262127726,
+          "fear": 0.01202736092777718,
+          "joy": 0.0022964428235360593,
+          "neutral": 0.9577286293830122,
+          "sadness": 0.007035651336830695,
+          "surprise": 0.006478381967886452
+        },
+        "uncertain": false,
+        "runner_up": "fear",
+        "sarcasm": {
+          "score": 0.17974642605723026,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I am deeply saddened by the news of the earthquake casualties.",
+      "expected": "0",
+      "result": {
+        "emotion": "sadness",
+        "score": 0.9807377149224038,
+        "scores": {
+          "anger": 0.0006737487299229853,
+          "disgust": 0.0021685252057433257,
+          "fear": 0.003774419068521862,
+          "joy": 0.0013905665926051492,
+          "neutral": 0.006010924076248802,
+          "sadness": 0.9807377149224038,
+          "surprise": 0.0052441014045540345
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.21345914582223974,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The hotel room was immaculate, quiet, and had a wonderful view of the harbor.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.8447422359647115,
+        "scores": {
+          "anger": 0.0029964551704577363,
+          "disgust": 0.02364964030975352,
+          "fear": 0.0023313637286639472,
+          "joy": 0.8447422359647115,
+          "neutral": 0.10823924061676717,
+          "sadness": 0.014711309179838976,
+          "surprise": 0.003329755029807143
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.488222389711284,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The traffic was heavy so we arrived thirty minutes later than planned.",
+      "expected": "0",
+      "result": {
+        "emotion": "fear",
+        "score": 0.4809471244492729,
+        "scores": {
+          "anger": 0.07301212658538808,
+          "disgust": 0.06253448712142928,
+          "fear": 0.4809471244492729,
+          "joy": 0.002769123458449565,
+          "neutral": 0.1951760301216181,
+          "sadness": 0.0628252385711294,
+          "surprise": 0.12273586969271266
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.40942370891571045,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Oh wonderful, my computer crashed right before I hit save on the 50-page document.",
+      "expected": "1",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.8768181119124703,
+        "scores": {
+          "anger": 0.010562967192554333,
+          "disgust": 0.00532177773547462,
+          "fear": 0.01957586894137022,
+          "joy": 0.007238576144362808,
+          "neutral": 0.011737900538014977,
+          "sadness": 0.06874479753575273,
+          "surprise": 0.8768181119124703
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.9506864016492068,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Nothing brightens my morning quite like a dentist drill at 8 AM. Pure bliss.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9385381597163813,
+        "scores": {
+          "anger": 0.0016937426199576868,
+          "disgust": 0.0018277991825811754,
+          "fear": 0.0013609605447330077,
+          "joy": 0.9385381597163813,
+          "neutral": 0.029876072809954267,
+          "sadness": 0.018613988361194603,
+          "surprise": 0.008089276765197967
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.9637458381943868,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The airline lost my luggage for the third time this month. Absolute peak performance.",
+      "expected": "1",
+      "result": {
+        "emotion": "sadness",
+        "score": 0.6279300154945006,
+        "scores": {
+          "anger": 0.12382800723070779,
+          "disgust": 0.12807103112679008,
+          "fear": 0.009488171419379101,
+          "joy": 0.0019791413577562146,
+          "neutral": 0.07625098145367838,
+          "sadness": 0.6279300154945006,
+          "surprise": 0.03245265191718788
+        },
+        "uncertain": false,
+        "runner_up": "disgust",
+        "sarcasm": {
+          "score": 0.9678992936641189,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "We spent the weekend camping in the national park and had a peaceful time.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9780173674860494,
+        "scores": {
+          "anger": 0.001956529058661824,
+          "disgust": 0.0028080776008250464,
+          "fear": 0.0004372005808740494,
+          "joy": 0.9780173674860494,
+          "neutral": 0.009974962480982527,
+          "sadness": 0.0058311431099610815,
+          "surprise": 0.0009747196826460278
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.3258958854048218,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I am very grateful for the scholarship that made my studies possible.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9724537444365478,
+        "scores": {
+          "anger": 0.00262550093897863,
+          "disgust": 0.001087546316603496,
+          "fear": 0.0005264168566884175,
+          "joy": 0.9724537444365478,
+          "neutral": 0.008222492170033596,
+          "sadness": 0.005405293153035859,
+          "surprise": 0.009679006128112198
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.3837369268018923,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The customer support representative resolved my issue within five minutes politely.",
+      "expected": "0",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.9042091472534083,
+        "scores": {
+          "anger": 0.02992988609166867,
+          "disgust": 0.010871690607024654,
+          "fear": 0.006730638964700544,
+          "joy": 0.014172436833672464,
+          "neutral": 0.9042091472534083,
+          "sadness": 0.024832444322381988,
+          "surprise": 0.009253755927143378
+        },
+        "uncertain": false,
+        "runner_up": "anger",
+        "sarcasm": {
+          "score": 0.8833869695663452,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Because dropping my phone directly into a puddle was precisely on my to-do list today.",
+      "expected": "1",
+      "result": {
+        "emotion": "disgust",
+        "score": 0.5972597925298848,
+        "scores": {
+          "anger": 0.07525023478117177,
+          "disgust": 0.5972597925298848,
+          "fear": 0.057555665456271006,
+          "joy": 0.00813726205876357,
+          "neutral": 0.22936645604272082,
+          "sadness": 0.026024839596632196,
+          "surprise": 0.006405749534555848
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.5986146926879883,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Nothing beats waking up at 5 AM on a freezing Monday to a cold shower. Pure luxury.",
+      "expected": "1",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.8828725998872313,
+        "scores": {
+          "anger": 0.014770097472996449,
+          "disgust": 0.012544403961068323,
+          "fear": 0.0015158758208329963,
+          "joy": 0.04477883525974303,
+          "neutral": 0.8828725998872313,
+          "sadness": 0.01935813188236464,
+          "surprise": 0.024160055715763275
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.9557754183759819,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Oh fantastic, my flight is delayed by four hours. Just how I wanted to spend my afternoon.",
+      "expected": "1",
+      "result": {
+        "emotion": "surprise",
+        "score": 0.9566573162964193,
+        "scores": {
+          "anger": 0.004863249735007289,
+          "disgust": 0.002070319661907172,
+          "fear": 0.003253890987823567,
+          "joy": 0.008112658965650117,
+          "neutral": 0.010309335122788994,
+          "sadness": 0.014733229230403572,
+          "surprise": 0.9566573162964193
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.9893885780080678,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I love it when my computer crashes right before I save a three-hour report. Truly the highlight of my week.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.8912001933295298,
+        "scores": {
+          "anger": 0.016360802732127,
+          "disgust": 0.006177350006362272,
+          "fear": 0.0023792560905100545,
+          "joy": 0.8912001933295298,
+          "neutral": 0.04091572055535962,
+          "sadness": 0.016374789334686092,
+          "surprise": 0.026591887951425138
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.9900057727469919,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Oh wonderful, another meeting that could have been a one-line email. Absolutely riveting.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.6935033442986347,
+        "scores": {
+          "anger": 0.0023588220311932155,
+          "disgust": 0.009320215775992844,
+          "fear": 0.019429740432057786,
+          "joy": 0.6935033442986347,
+          "neutral": 0.04463828871482436,
+          "sadness": 0.008225061509405837,
+          "surprise": 0.22252452723789123
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.9794525680552999,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Thanks a lot for eating the lunch I clearly labeled with my name in the fridge. True team player.",
+      "expected": "1",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.492304042554483,
+        "scores": {
+          "anger": 0.02124824384065725,
+          "disgust": 0.010629650251639972,
+          "fear": 0.0012541277090507665,
+          "joy": 0.39712563829138575,
+          "neutral": 0.492304042554483,
+          "sadness": 0.006307091212668696,
+          "surprise": 0.07113120614011456
+        },
+        "uncertain": true,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.58689284324646,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "What a delightful surprise, getting a flat tire in the pouring rain right on my way to an interview.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.874642506410262,
+        "scores": {
+          "anger": 0.0015661492049449685,
+          "disgust": 0.0015358572391917546,
+          "fear": 0.0016671573099143898,
+          "joy": 0.874642506410262,
+          "neutral": 0.01847453633488987,
+          "sadness": 0.0028248737121561204,
+          "surprise": 0.09928891978864093
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.9900443480160508,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I just love paying high rent for an apartment where the heater never works in the dead of winter.",
+      "expected": "1",
+      "result": {
+        "emotion": "joy",
+        "score": 0.8411409234065393,
+        "scores": {
+          "anger": 0.0181040601481248,
+          "disgust": 0.023838041453468812,
+          "fear": 0.00263566155091284,
+          "joy": 0.8411409234065393,
+          "neutral": 0.07392998984181165,
+          "sadness": 0.0330312637447122,
+          "surprise": 0.007320059854430385
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.9746528249706089,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "Great job team, you deleted the production database right before the holiday weekend. Pure genius.",
+      "expected": "1",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.45046207168780583,
+        "scores": {
+          "anger": 0.030808133733128247,
+          "disgust": 0.011398891128792867,
+          "fear": 0.0013130901170325675,
+          "joy": 0.24111498712289411,
+          "neutral": 0.45046207168780583,
+          "sadness": 0.007735504698633997,
+          "surprise": 0.25716732151171234
+        },
+        "uncertain": false,
+        "runner_up": "surprise",
+        "sarcasm": {
+          "score": 0.9836127152212092,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "My favorite thing in the world is when the Wi-Fi cuts out right in the middle of a job interview.",
+      "expected": "1",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.5156862118089683,
+        "scores": {
+          "anger": 0.013463612589439138,
+          "disgust": 0.041299082165727516,
+          "fear": 0.003823635152348915,
+          "joy": 0.3642506286137478,
+          "neutral": 0.5156862118089683,
+          "sadness": 0.0053711677676343775,
+          "surprise": 0.05610566190213386
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.9765800560848772,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "We enjoyed a peaceful stroll through the botanical garden on a warm spring afternoon.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.981542545329817,
+        "scores": {
+          "anger": 0.001973192243005405,
+          "disgust": 0.0031012374068541894,
+          "fear": 0.0006181699684247445,
+          "joy": 0.981542545329817,
+          "neutral": 0.008903892870951845,
+          "sadness": 0.002324988641684263,
+          "surprise": 0.001535973539262534
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.36544253333084187,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The software update completed without any errors or downtime during the maintenance window.",
+      "expected": "0",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.7424795270110888,
+        "scores": {
+          "anger": 0.011780440254532908,
+          "disgust": 0.007986628707068684,
+          "fear": 0.0033983044486879405,
+          "joy": 0.09931300154542416,
+          "neutral": 0.7424795270110888,
+          "sadness": 0.08145366870812287,
+          "surprise": 0.05358842932507471
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.4804939031600952,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "I was deeply touched by the kindness of strangers who helped push my stalled car.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.9355855566171498,
+        "scores": {
+          "anger": 0.0013136548707401322,
+          "disgust": 0.007277062610335822,
+          "fear": 0.0022631520917264225,
+          "joy": 0.9355855566171498,
+          "neutral": 0.016225874597613328,
+          "sadness": 0.024533986398908,
+          "surprise": 0.01280071281352644
+        },
+        "uncertain": false,
+        "runner_up": "sadness",
+        "sarcasm": {
+          "score": 0.25664563516650407,
+          "detected": false,
+          "uncertain": true,
+          "label": "Uncertain"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The university announced a new scholarship program for international graduate students.",
+      "expected": "0",
+      "result": {
+        "emotion": "joy",
+        "score": 0.8774252341393985,
+        "scores": {
+          "anger": 0.005668925077606673,
+          "disgust": 0.0069831193668106395,
+          "fear": 0.004359268657239689,
+          "joy": 0.8774252341393985,
+          "neutral": 0.07925693723531957,
+          "sadness": 0.003482306528796833,
+          "surprise": 0.022824208994828007
+        },
+        "uncertain": false,
+        "runner_up": "neutral",
+        "sarcasm": {
+          "score": 0.9098269207801384,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    },
+    {
+      "task": "sarcasm",
+      "text": "The flight landed twenty minutes ahead of schedule and baggage claim was quick.",
+      "expected": "0",
+      "result": {
+        "emotion": "neutral",
+        "score": 0.5085410920220288,
+        "scores": {
+          "anger": 0.015289272657356481,
+          "disgust": 0.0038600751445420044,
+          "fear": 0.01315445972518743,
+          "joy": 0.34679489294305765,
+          "neutral": 0.5085410920220288,
+          "sadness": 0.003661790520718976,
+          "surprise": 0.10869841698710868
+        },
+        "uncertain": false,
+        "runner_up": "joy",
+        "sarcasm": {
+          "score": 0.8782098365897038,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        },
+        "backend": "pretrained_transformers",
+        "models": {
+          "emotion": "j-hartmann/emotion-english-distilroberta-base",
+          "sarcasm": "cardiffnlp/twitter-roberta-base-irony"
+        },
+        "revisions": {
+          "emotion": "0e1cd914e3d46199ed785853e12b57304e04178b",
+          "sarcasm": "3bf8f118bdf6b00c99658151ef10c9a0b9afd6bf"
+        }
+      }
+    }
+  ]
+}

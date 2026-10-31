@@ -1,0 +1,133 @@
+{
+  "source_commit": "f62e4d5",
+  "tests_passed": 14,
+  "tests_failed": 0,
+  "test_command": "python -m unittest discover -s tests -v",
+  "model_load_and_first_prediction_seconds": 3.716,
+  "warm_mean_ms": 9.94,
+  "warm_p95_ms": 11.816,
+  "timing_runs": 60,
+  "scope": "Local Python inference with word contributions; excludes Streamlit rendering, HTTP and cold Python imports",
+  "examples": [
+    {
+      "text": "I feel happy and excited about my new job!",
+      "emotion": "joy",
+      "score": 0.9168414646562574,
+      "scores": {
+        "anger": 0.012717967562185916,
+        "fear": 0.02048508154771925,
+        "joy": 0.9168414646562574,
+        "love": 0.02136306075466546,
+        "sadness": 0.02388300360257331,
+        "surprise": 0.004709421876598535
+      },
+      "uncertain": false,
+      "keywords": [
+        "happy",
+        "excited",
+        "feel"
+      ],
+      "runner_up": "sadness"
+    },
+    {
+      "text": "what a bad day was today",
+      "emotion": "sadness",
+      "score": 0.6080934829636383,
+      "scores": {
+        "anger": 0.09723087414990857,
+        "fear": 0.09504015298175024,
+        "joy": 0.16982195077693013,
+        "love": 0.015619067989755347,
+        "sadness": 0.6080934829636383,
+        "surprise": 0.014194471138017273
+      },
+      "uncertain": false,
+      "keywords": [
+        "bad",
+        "day",
+        "today"
+      ],
+      "runner_up": "joy"
+    },
+    {
+      "text": "I am angry and frustrated about being treated unfairly.",
+      "emotion": "anger",
+      "score": 0.933363323922456,
+      "scores": {
+        "anger": 0.933363323922456,
+        "fear": 0.028832477654901666,
+        "joy": 0.005841739902755242,
+        "love": 0.01414695946947471,
+        "sadness": 0.01288958867727095,
+        "surprise": 0.004925910373141394
+      },
+      "uncertain": false,
+      "keywords": [
+        "angry",
+        "frustrated",
+        "treated"
+      ],
+      "runner_up": "fear"
+    },
+    {
+      "text": "I feel scared and nervous about what might happen.",
+      "emotion": "fear",
+      "score": 0.9987602373754062,
+      "scores": {
+        "anger": 0.00021956389290572731,
+        "fear": 0.9987602373754062,
+        "joy": 0.000460482554973237,
+        "love": 0.0001322454697099133,
+        "sadness": 0.0002624099989941024,
+        "surprise": 0.0001650607080107958
+      },
+      "uncertain": false,
+      "keywords": [
+        "scared",
+        "nervous",
+        "about what"
+      ],
+      "runner_up": "joy"
+    },
+    {
+      "text": "I feel loved and I deeply care about my family.",
+      "emotion": "love",
+      "score": 0.9123893772152457,
+      "scores": {
+        "anger": 0.01078757448247689,
+        "fear": 0.014248208543816405,
+        "joy": 0.026690867239844457,
+        "love": 0.9123893772152457,
+        "sadness": 0.024064053983406823,
+        "surprise": 0.011819918535209795
+      },
+      "uncertain": false,
+      "keywords": [
+        "loved",
+        "about",
+        "and"
+      ],
+      "runner_up": "joy"
+    },
+    {
+      "text": "I am amazed and surprised by this unexpected news!",
+      "emotion": "surprise",
+      "score": 0.9995143158134643,
+      "scores": {
+        "anger": 0.00010208760817707451,
+        "fear": 0.00014586772185787978,
+        "joy": 7.178449912835245e-05,
+        "love": 6.301216025475276e-05,
+        "sadness": 0.00010293219711755806,
+        "surprise": 0.9995143158134643
+      },
+      "uncertain": false,
+      "keywords": [
+        "amazed",
+        "surprised",
+        "by"
+      ],
+      "runner_up": "fear"
+    }
+  ]
+}

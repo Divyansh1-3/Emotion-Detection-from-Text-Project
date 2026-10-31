@@ -1,97 +1,120 @@
-# Emotion Detection from Text
+# Emotion and Sarcasm Detection from Text
 
-A small English-only machine-learning project by **Divyansh Yadav** for HCL Industrial Training.
+An English-only Streamlit project by **Divyansh Yadav** for HCL Industrial Training.
+The application classifies **emotion and sarcasm/irony using two pretrained transformers**.
 
-Enter a sentence, click **Analyze emotion**, and explore the result in a dashboard with input and output side by side. The six emotions are **joy, sadness, anger, fear, love, and surprise**.
+Enter a sentence and click **Analyze text**. The dashboard shows seven emotion scores,
+a separate sarcasm assessment, session counts, the latest ten results, and **Save result**.
+Sarcasm does not automatically change the emotion label.
 
-The dashboard includes session summary cards, a color-coded score chart, an explanation based on contributing words, the 10 most recent analyses, and a **Save result** text download. **Clear text** clears the input; **Reset session** clears the results and summary counts. Everything runs locally without an API key.
+## Models
 
-## Run on your computer
+| Task | Pretrained checkpoint | Output |
+|---|---|---|
+| Emotion | [j-hartmann/emotion-english-distilroberta-base](https://huggingface.co/j-hartmann/emotion-english-distilroberta-base) | anger, disgust, fear, joy, neutral, sadness, surprise |
+| Sarcasm indicator | [cardiffnlp/twitter-roberta-base-irony](https://huggingface.co/cardiffnlp/twitter-roberta-base-irony) | non-irony and irony |
 
-Use **Python 3.13**. In a terminal inside this project folder, run these commands once:
+The irony model was fine-tuned on TweetEval. Irony is used as a **proxy for sarcasm**;
+it does not reliably identify every form of sarcasm, humor, or dismissiveness.
+The exact model revisions are pinned in `emotion_model.py`.
+The models run on CPU in float16 to reduce weight memory, with two compute threads.
+Concurrent inference is serialized to bound activation memory.
+Models are shared across sessions; user input and results are not cached globally.
+
+There is **no TF-IDF or rule-based fallback**. If either transformer cannot load or run,
+the app reports an error and does not save a partial or fabricated analysis.
+The UI summary describes scores and their limits; it does not claim to attribute
+individual words to transformer decisions.
+
+## Run locally
+
+Use Python 3.13. From this repository folder:
 
 ```powershell
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-Then double-click **start_app.bat**, or run:
-
-```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-Open **http://localhost:8501**. Keep the terminal open while using the app; press **Ctrl+C** to stop it. The trained model is included, so you do not need to train anything or create an API key. After installing the packages, the local app works without internet.
+For an existing environment, rerun the **pip install** command: the former
+Streamlit/scikit-learn-only environment does not contain the new model dependencies.
+Then use `start_app.bat` or the Streamlit command and open http://localhost:8501.
 
-On Linux/macOS, use `python3.13 -m venv .venv`, `.venv/bin/python -m pip install -r requirements.txt`, and `.venv/bin/python -m streamlit run app.py`.
+On Linux/macOS, use `python3.13 -m venv .venv` and `.venv/bin/python`.
+The requirements select CPU-only PyTorch wheels on Linux/Windows. No API key is needed.
 
-## Deploy for free
-
-Use [Streamlit Community Cloud](https://share.streamlit.io/). It gives the app a shareable web link, and visitors do not need Python installed.
-
-Create an app from this GitHub repository with:
-
-| Setting | Value |
-|---|---|
-| Repository | `Divyansh1-3/Emotion-Detection-from-Text-Project` |
-| Branch | `main` |
-| Main file | `app.py` |
-| Python version, under Advanced settings | `3.13` |
-| Secrets | None needed |
-
-See [the short deployment guide](docs/deployment.md). Hosting requires a Streamlit account linked to GitHub. A deployment configuration is not a live deployment; Streamlit provides the final URL after deployment succeeds.
-
-Free apps can sleep when unused. The first visitor may need to wake the app and wait. The model is already trained and only about **655 KiB**, so there are no model downloads or training jobs during startup. This does not guarantee a particular opening time on free hosting.
-
-## How it works
-
-1. Check that the input contains words and is at most 1,000 characters.
-2. **TF-IDF** converts words and pairs of words into numbers.
-3. **Logistic regression** uses those numbers to score the six emotions.
-4. Streamlit shows the highest-scoring emotion, a bar chart, and words with positive contributions to that emotion's linear-model score. The explanation is generated locally from those weights, not by an external AI service.
-
-The saved model loads once, on the first prediction, and is reused. Input and the latest 10 results remain in the current session's memory; the app does not write them to a database or log. **Save result** lets you explicitly download the current result to your computer. Session counters cover all successful analyses since the last reset, including those no longer in the recent list.
-
-## Main files
-
-| File | Purpose |
-|---|---|
-| `app.py` | Streamlit page |
-| `styles.css` | Small local stylesheet for the dashboard |
-| `emotion_model.py` | Input checks and prediction |
-| `model/emotion_model.pkl.gz` | Small, already-trained model |
-| `train_model.py` | Optional training and evaluation |
-| `data/` | Compressed English training/test data and attribution |
-| `requirements.txt` | Two direct dependencies: Streamlit and scikit-learn |
-| `tests/test_project.py` | Model and interface checks |
-
-The app has no Flask server, transformer models, translation, external AI API, retrieval system, database, batch uploads, or separate frontend build.
-
-## Results and limits
-
-The model trained on 16,000 examples from the [DAIR-AI Emotion dataset](data/README.md). It achieved **88.2% accuracy** and **0.842 macro F1** on 1,989 test examples, after excluding 11 exact training duplicates. Detailed results are in [model/evaluation.json](model/evaluation.json). These results apply to this dataset and are not a guarantee for new sentences.
-
-- This basic model supports English text. Other scripts are rejected. It does not automatically identify every language written with English letters.
-- Neutral and disgust are not training labels. Factual sentences may be assigned one of the six emotions even when none fits well.
-- Sarcasm, negation, unfamiliar words, and mixed feelings can be misunderstood.
-- The displayed score is the model's estimate, not verified confidence. A weak or closely tied prediction shows a warning.
-- This is a student demo, not a tool for diagnosing anyone's mental state.
-
-## Check or retrain
+**First model use downloads about 827 MB of weights**, plus tokenizer/config files,
+from Hugging Face. Allow time for downloading and loading. Downloads are cached on the host;
+a fresh cloud container may need to download again. To load them before opening the UI:
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe train_model.py
+.\.venv\Scripts\python.exe -c "from emotion_model import load_models; load_models()"
 ```
 
-Retraining is optional. It overwrites the saved model and evaluation report using the included data. Keep the pinned scikit-learn version: changing it requires retraining the saved model and rerunning the checks. Only load model files you trust.
+Once the packages and both pinned model checkpoints are cached, inference can work offline.
+Set `HF_HUB_OFFLINE=1` to require cache-only operation. Inference runs on the app's host,
+not a paid model API. A cloud visit necessarily sends the entered text to your app server.
+
+## Public deployment
+
+[Public app](https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/)
+
+The owner verified the previous six-label app in a private browser session on
+1 November 2026. **The restored transformer version still requires a push/redeployment
+and a new public smoke check.** That earlier check is not verification of these changes.
+
+Keep repository `Divyansh1-3/Emotion-Detection-from-Text-Project`, branch `main`,
+entrypoint `app.py`, Python `3.13`, and no secrets. Follow [deployment.md](docs/deployment.md).
+Transformers increase download size, RAM use, and startup time. Free hosting can sleep
+or exceed its resource limits; no instant-start or resource-fit guarantee is made.
+
+## Interpreting results
+
+- Emotion scores cover seven labels. Love is no longer a separate label.
+- An emotion is marked uncertain when its top score is below 45%, or its lead is under 10 percentage points.
+- Sarcasm/irony score at least 80%: **Likely sarcasm**; at most 20%: **Sarcasm not detected**;
+  between those thresholds: **Uncertain**. These are display thresholds, not empirical calibration.
+- The emotion may reflect literal wording even when the irony model flags sarcasm.
+- The model can flag sincere statements and miss dry humor. In particular, it currently misses
+  the sarcastic intent in **“I am busy right now, can I ignore you some other time?”**
+  This observed limitation is recorded rather than treated as a passing sarcasm example.
+- English letters are checked; other languages written in Latin letters are not reliably detected.
+  Inputs are limited to 1,000 characters and 512 tokens per model. Excess tokens are rejected,
+  not silently truncated.
+- This student demo does not determine a person's mental state.
+
+History is limited to ten entries per browser session. Summary counts cover all successful
+analyses since reset. **Clear text** clears the input/current result; **Reset session**
+also clears history and counters. Downloaded results include both assessments and model revisions.
+
+## Verification
+
+```powershell
+# Fast contract/dashboard tests with controlled model outputs:
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+
+# Real pretrained model integration checks:
+$env:RUN_TRANSFORMER_TESTS='1'
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_transformers.py -v
+
+# Run the small project regression set and write its full results:
+.\.venv\Scripts\python.exe evaluate_transformers.py
+```
+
+The CI workflow runs both the fast tests and real-model integration.
+[Transformer evaluation](docs/transformer-evaluation.json) records 35 emotion and 35 sarcasm
+regression examples and known failures. These hand-written, previously reviewed examples
+are **not an independent benchmark**. The report distinguishes raw binary argmax metrics
+from the dashboard's uncertain category.
+
+The old **88.2% accuracy / 0.842 macro-F1** figures, `model/emotion_model.pkl.gz`,
+`model/evaluation.json`, compressed DAIR-AI data, and `train_model.py` belong to the
+historical TF-IDF baseline. They are not used by the current app or evidence for its accuracy.
+The historical training script requires scikit-learn 1.9.1 separately.
+See [verification status](docs/verification.json) for the scope of this revision's checks.
 
 ## Submission documents
 
-These documents describe the current English-only Streamlit dashboard:
-
-- [Project report](docs/P_098_Emotion_Detector_Documentation.docx)
-- [Software Requirements Specification](docs/BTech_3rd_Year_SRS_Emotion_Detector.docx)
-- [One-page synopsis](docs/P_098_Emotion_Detector_Synopsis.docx)
-
-All 14 automated model and interface checks passed. [Verification records](docs/verification.json) include example predictions and local inference timings. The documents include the measured dataset results and distinguish local verification from the public deployment step, which remains pending.
+See [document status](docs/README.md) before submitting the report, SRS, or synopsis.
+The application source and evaluation records distinguish the restored transformer behavior
+from the earlier simplified app and from public deployment verification.
