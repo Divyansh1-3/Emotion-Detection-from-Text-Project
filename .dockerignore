@@ -10,5 +10,6 @@ __pycache__
 *.db
 *.zip
 logs
+data/raw
 .tools
 output

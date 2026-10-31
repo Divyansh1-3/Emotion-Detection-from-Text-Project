@@ -1,54 +1,29 @@
-# P_098 — User Interaction Flows & System States
+# User Flow
 
----
+Author: Divyansh Yadav
 
-## 1. Single Utterance Analysis Flow
+## Input rules
 
-```
-[ User Enters Text or Picks Sample ]
-               │
-               ▼
-[ Clicks "Analyze Emotion" ]
-               │
-               ▼
-   [ UI Shows Spinner & Route Hint ]
-               │
-               ▼
- [ POST /api/v1/emotion/process ]
-               │
-   ┌───────────┴───────────┐
-   ▼                       ▼
-(200 OK Response)       (Error 400 / 422)
-   │                       │
-   ▼                       ▼
-- Render Emoji & Emotion    - Show Alert Dialog
-- Render Confidence %       - Keep Input Intact
-- Draw Chart.js Bar Chart
-- Show Sarcasm/Uncertain Badges
-- Display Grounded Rationale
-- Render RAG Exemplars
-- Draw Route Pills & Latency
-- Enable "Copy JSON" Button
-- Provide Direct Link to /inspect/<id>
-```
+Accept 1 to 4,000 characters after sanitization. Reject empty/control-only input and invalid batch item types. Transformer tokenizers truncate at 512 tokens. CSV uploads are limited to 16 MB and 500 rows; oversized batches are rejected before processing.
 
----
+## Execution
 
-## 2. Batch CSV Processing Flow
+After preprocessing and rules, a bounded three-worker pool runs both classifiers and retrieval concurrently. Fusion waits for their results. PARALLEL_INFERENCE=0 disables this optimization. Model singletons avoid repeated loading; models and language detection warm before requests. Two PyTorch threads are the default. The environment file is read once per process; restart after configuration changes.
 
-1. User switches to the "Batch CSV" tab.
-2. User drags and drops a CSV file or clicks "Browse" to select `data/sample/sample_inputs.csv`.
-3. UI validates the `.csv` file extension and displays file name and size.
-4. User clicks "Process Batch".
-5. Browser dispatches `multipart/form-data` payload to `POST /api/v1/emotion/batch`.
-6. Backend parses text column, executes pipeline per row, and records all transactions in SQLite.
-7. UI updates with a tabular summary: index, snippet, predicted emotion pill, confidence percentage, sarcasm status, and uncertainty status.
+## Batch results
 
----
+Preserve row positions and report each validation error explicitly. Return counts for attempted, successful and failed rows. Failed rows do not fabricate a neutral prediction. Valid rows use mode=batch and are persisted. Entirely malformed requests return HTTP 400 or 422.
 
-## 3. Server-Side Audit Flow (`/inspect`)
+## Frontend
 
-1. User or reviewer navigates to `http://127.0.0.1:5000/inspect`.
-2. Flask queries SQLite database through `ResultsRepository.list()`.
-3. Page displays total runs recorded, uncertainty counts, mean confidence, and a paginated table.
-4. Clicking "Inspect &rarr;" opens `/inspect/<id>` for complete JSON trace inspection.
+Flask serves Jinja templates, custom CSS and vanilla JavaScript. Chart.js is bundled locally with its license; textual score rendering remains available if the chart library fails. The audit view reads saved results and offers CSV export.
+
+## Implementation scope
+
+Flask is the chosen framework for this implementation. The supplied specification named FastAPI; this is an explicit implementation deviation. Flask provides the HTTP API and existing web interface. It does not implement FastAPI or automatic OpenAPI documentation.
+
+Common Hindi/Hinglish phrases are normalized for the English models. 17/18 curated demonstration inputs matched their expected emotion. These examples exercise supported phrases; they do not establish general multilingual accuracy. Adapted and other non-English outputs always require review. Hindi/Hinglish sarcasm was not benchmarked.
+
+Experimental temperature scaling uses 700 GoEmotions development examples and 350 disjoint test examples, with temperature 1.751. Validation calibration error fell from 17.4% to 4.2%; label accuracy remained 47.1%. The upstream model used GoEmotions, so training overlap is unknown. This is domain-specific calibration, not independent proof of general accuracy. Sarcasm and non-English scores remain uncalibrated.
+
+The measured warm mean is 139.2 ms; the under-150 ms target is passed on this host. Startup, HTTP, database writes and concurrent traffic are excluded. Hosted performance needs separate measurement.

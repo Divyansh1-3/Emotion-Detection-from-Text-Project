@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-31T18:12:01.106900+00:00",
+  "timestamp_utc": "2026-10-31T19:34:06.334481+00:00",
   "mode": "hybrid",
   "retrieval": "embeddings",
   "llm": "mock",
@@ -7,7 +7,18 @@
   "platform": "Windows-10-10.0.26300-SP0",
   "cpu": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
   "torch_threads": "2",
-  "startup_ms": 49072.60469999892,
+  "startup_ms": 16130.442999998195,
+  "parallel_inference": true,
+  "calibration_status": "temperature_scaled",
+  "actual_path_counts": {
+    "emotion_model_transformer": 70,
+    "sarcasm_model_transformer": 70,
+    "retrieval_rag_embeddings": 70
+  },
+  "confidence_method_counts": {
+    "temperature_scaled": 69,
+    "uncalibrated_fusion": 1
+  },
   "emotion": {
     "total": 35,
     "accuracy": 0.9142857142857143,
@@ -57,8 +68,8 @@
         "support": 5
       }
     },
-    "avg_latency_ms": 219.80976571389223,
-    "p95_latency_ms": 250.55826999814596,
+    "avg_latency_ms": 139.175071428638,
+    "p95_latency_ms": 154.7685600016848,
     "y_true": [
       "joy",
       "joy",

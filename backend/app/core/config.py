@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from functools import lru_cache
 
 from dotenv import load_dotenv
 
@@ -51,6 +52,7 @@ class Settings:
     sarcasm_model: str = "cardiffnlp/twitter-roberta-base-irony"
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     use_models: bool = True                # False -> heuristic/TF-IDF fallback (tests, offline)
+    parallel_inference: bool = True
 
     # ---- Decision thresholds ------------------------------------------------
     uncertain_threshold: float = 0.40
@@ -105,13 +107,19 @@ class Settings:
         raise ValueError("Only sqlite:/// database URLs are supported. PostgreSQL requires a separate repository implementation.")
 
 
+@lru_cache(maxsize=1)
+def _load_environment() -> None:
+    """Read .env once at process startup; process environment overrides stay dynamic."""
+    load_dotenv(ROOT / ".env", override=False)
+
+
 def get_settings() -> Settings:
     """Build a :class:`Settings` from the current environment.
 
     Cheap enough to call freely.  ``load_dotenv`` does not override variables
     that are already set, so test-provided ``os.environ`` values win.
     """
-    load_dotenv(ROOT / ".env", override=False)
+    _load_environment()
     return Settings(
         llm_mode=os.getenv("LLM_MODE", "mock"),
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),
@@ -123,6 +131,7 @@ def get_settings() -> Settings:
         sarcasm_model=os.getenv("SARCASM_MODEL", "cardiffnlp/twitter-roberta-base-irony"),
         embedding_model=os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"),
         use_models=_bool("USE_MODELS", "1"),
+        parallel_inference=_bool("PARALLEL_INFERENCE", "1"),
         uncertain_threshold=_float("UNCERTAIN_THRESHOLD", "0.40"),
         sarcasm_threshold=_float("SARCASM_THRESHOLD", "0.50"),
         retrieval_top_k=_int("RETRIEVAL_TOP_K", "5"),

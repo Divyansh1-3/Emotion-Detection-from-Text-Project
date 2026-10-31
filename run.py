@@ -18,8 +18,7 @@ from backend.app.engines.warmup import warm_up_models
 if __name__ == "__main__":
     settings = get_settings()
 
-    # Pre-warm transformer models into RAM so web requests are instant
-    warm_up_models()
+    # backend.app.main warms models before accepting requests.
 
     banner = f"""
 ==================================================

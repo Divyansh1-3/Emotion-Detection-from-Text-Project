@@ -9,6 +9,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      USE_MODELS: "0"
+      LLM_MODE: "mock"
+      HF_HUB_OFFLINE: "1"
+      CALIBRATION_ENABLED: "0"
     strategy:
       matrix:
         python-version: ["3.11"]

@@ -43,6 +43,23 @@ from sklearn.metrics import (
 from backend.app.domain.emotion_schema import EMOTION_LABELS
 from backend.app.engines.router import execute_pipeline
 
+PATH_COUNTS = {}
+CONFIDENCE_COUNTS = {}
+REQUIRE_MODELS = False
+
+
+def measured_pipeline(text):
+    result = execute_pipeline(text)
+    required = {"emotion_model_transformer", "sarcasm_model_transformer", "retrieval_rag_embeddings"}
+    if REQUIRE_MODELS and not required.issubset(result.route):
+        raise RuntimeError("Hybrid benchmark encountered a fallback: " + str(result.route))
+    for route in result.route:
+        if route.startswith(("emotion_model_", "sarcasm_model_", "retrieval_rag_")):
+            PATH_COUNTS[route] = PATH_COUNTS.get(route, 0) + 1
+    method = result.confidence_method
+    CONFIDENCE_COUNTS[method] = CONFIDENCE_COUNTS.get(method, 0) + 1
+    return result
+
 
 def evaluate_emotions(eval_csv_path: Path):
     with open(eval_csv_path, "r", encoding="utf-8") as f:
@@ -58,7 +75,7 @@ def evaluate_emotions(eval_csv_path: Path):
         text = row["text"]
         gold = row["gold_emotion"].strip().lower()
         t0 = time.perf_counter()
-        res = execute_pipeline(text)
+        res = measured_pipeline(text)
         lat = (time.perf_counter() - t0) * 1000.0
 
         y_true.append(gold)
@@ -108,7 +125,7 @@ def evaluate_sarcasm(eval_csv_path: Path):
     for row in rows:
         text = row["text"]
         gold = int(row["gold_sarcasm"])
-        res = execute_pipeline(text)
+        res = measured_pipeline(text)
         pred = 1 if res.sarcasm else 0
 
         y_true.append(gold)
@@ -233,10 +250,12 @@ Latency measures the warm pipeline including template rationale, excluding start
 
 
 def main():
+    global REQUIRE_MODELS
     parser = argparse.ArgumentParser(description="Reproducible local evaluation; never calls an LLM API.")
     parser.add_argument("--mode", choices=["hybrid", "fallback"], default="hybrid")
     parser.add_argument("--check", action="store_true", help="Exit unsuccessfully if any target is missed")
     args = parser.parse_args()
+    REQUIRE_MODELS = args.mode == "hybrid"
     os.environ["LLM_MODE"] = "mock"
     os.environ["USE_MODELS"] = "1" if args.mode == "hybrid" else "0"
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -244,6 +263,8 @@ def main():
     from backend.app.engines.emotion_model import is_model_loaded
     from backend.app.engines.sarcasm_model import is_model_loaded as sarcasm_loaded
     from backend.app.engines.retrieval import retrieve_similar, retrieval_backend
+    from backend.app.engines.calibration import calibration_profile
+    from backend.app.core.config import get_settings
     started = time.perf_counter()
     warm_up_models()
     retrieve_similar("Warm up retrieval")
@@ -263,6 +284,9 @@ def main():
         "retrieval": retrieval_backend(), "llm": "mock", "python": platform.python_version(),
         "platform": platform.platform(), "cpu": platform.processor(),
         "torch_threads": os.getenv("TORCH_NUM_THREADS", "2"), "startup_ms": startup_ms,
+        "parallel_inference": get_settings().parallel_inference,
+        "calibration_status": calibration_profile()[1],
+        "actual_path_counts": PATH_COUNTS, "confidence_method_counts": CONFIDENCE_COUNTS,
         "emotion": em, "sarcasm": sarc,
     }
     (target.parent / ("evaluation-results" + suffix + ".json")).write_text(json.dumps(metadata, indent=2), encoding="utf-8")
@@ -270,6 +294,10 @@ def main():
     text = text.replace("**Engine Route:** Hybrid (Preprocess &bull; Rules &bull; Emotion Model &bull; Sarcasm Model &bull; RAG &bull; Fusion)",
                         f"**Mode:** {args.mode}; retrieval={retrieval_backend()}; LLM=mock; Python={platform.python_version()}\n**Startup:** {startup_ms:.1f} ms (reported separately from warm latency)")
     target.write_text(text, encoding="utf-8")
+    with target.open("a", encoding="utf-8") as report:
+        report.write("\n## Run verification\n\nEvery hybrid case must use both transformers and embedding retrieval, or the evaluator aborts.\n\n")
+        report.write(f"Parallel inference: {metadata['parallel_inference']}. Calibration profile: {metadata['calibration_status']}.\n\n")
+        report.write(f"Actual backend counts: `{PATH_COUNTS}`. Confidence methods: `{CONFIDENCE_COUNTS}`.\n")
     print(json.dumps({"mode": args.mode, "emotion_f1": em["macro_f1"], "sarcasm_f1": sarc["f1"], "warm_mean_ms": em["avg_latency_ms"], "startup_ms": startup_ms}))
     if args.check and not (em["macro_f1"] >= .70 and em["accuracy"] >= .70 and sarc["f1"] >= .65 and em["avg_latency_ms"] < 150):
         raise SystemExit(1)

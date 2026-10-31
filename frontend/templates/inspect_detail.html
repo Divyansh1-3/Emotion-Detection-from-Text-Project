@@ -37,7 +37,7 @@
         </div>
         <div class="verdict-badges">
           <div class="score-badge">
-            <span class="badge-title">Calibrated Confidence</span>
+            <span class="badge-title">Confidence Score</span>
             <span class="badge-val">{{ (analysis.confidence * 100)|round(1) }}%</span>
           </div>
           {% if analysis.uncertain %}
@@ -49,13 +49,14 @@
         </div>
       </div>
 
-      <h3 class="mt-4">Full Emotion Probability Distribution</h3>
+      <h3 class="mt-4">Emotion Scores</h3>
+      <p class="text-muted">{% if analysis.confidence_method == 'temperature_scaled' %}Experimental temperature-scaled emotion scores, fitted on English examples. Confidence is not a guarantee of correctness; sarcasm scores remain uncalibrated.{% else %}Uncalibrated scores combining model, rule and retrieval signals. These percentages are not measured probabilities of correctness.{% endif %}</p>
       <div class="scores-table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
               <th>Emotion</th>
-              <th>Probability</th>
+              <th>Score</th>
               <th>Distribution Bar</th>
             </tr>
           </thead>

@@ -41,10 +41,9 @@ def _load_pipeline(model_name: str):
     return _pipeline
 
 
-def predict_sarcasm(text: str) -> tuple[float, str]:
+def predict_sarcasm(text: str, rule_result=None) -> tuple[float, str]:
     """Return (sarcasm_probability, backend: 'transformer'|'heuristic')."""
     settings = get_settings()
-    rule_score = round(analyze_rules(text).sarcasm_cue_score, 4)
     if settings.use_models:
         pipe = _load_pipeline(settings.sarcasm_model)
         if pipe is not None:
@@ -57,6 +56,7 @@ def predict_sarcasm(text: str) -> tuple[float, str]:
                 return round(max(0.0, min(1.0, ml_prob)), 4), "transformer"
             except Exception:
                 pass
+    rule_score = round((rule_result if rule_result is not None else analyze_rules(text)).sarcasm_cue_score, 4)
     return rule_score, "heuristic"
 
 

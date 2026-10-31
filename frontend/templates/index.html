@@ -120,7 +120,7 @@
         <div id="emptyState" class="empty-state">
           <i class="fa-solid fa-brain empty-icon"></i>
           <h3>Ready for Analysis</h3>
-          <p>Submit an utterance or pick a demo sample to see real-time transformer predictions, sarcasm detection, calibrated confidence, and RAG grounding.</p>
+          <p>Submit an utterance or pick a demo sample to see emotion predictions, sarcasm detection, confidence scores, and retrieved examples.</p>
         </div>
 
         <!-- Loading State -->
@@ -145,7 +145,7 @@
             
             <div class="verdict-badges">
               <div class="score-badge" id="confidenceBadge">
-                <span class="badge-title">Calibrated Confidence</span>
+                <span class="badge-title">Confidence Score</span>
                 <span id="confidenceValue" class="badge-val">0.0%</span>
               </div>
               <div id="uncertainBadge" class="flag-badge warning hidden">
@@ -159,7 +159,8 @@
 
           <!-- Emotion Distribution Chart -->
           <div class="chart-section">
-            <h3><i class="fa-solid fa-chart-column"></i> Calibrated Probability Distribution</h3>
+            <h3><i class="fa-solid fa-chart-column"></i> Emotion Scores</h3>
+            <p class="text-muted" id="confidenceExplanation">Scores combine model, rule and retrieval signals. Review the confidence method shown with each result.</p>
             <div class="chart-wrapper">
               <canvas id="emotionChart"></canvas>
             </div>

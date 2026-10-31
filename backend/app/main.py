@@ -18,10 +18,10 @@ from backend.app import create_app
 from backend.app.core.config import get_settings
 
 app = create_app()
+from backend.app.engines.warmup import warm_up_models
+warm_up_models()
 
 if __name__ == "__main__":
-    from backend.app.engines.warmup import warm_up_models
-    warm_up_models()
     settings = get_settings()
     print(f"Starting P_098 Emotion Detection server on http://{settings.flask_host}:{settings.flask_port}")
     print(f"Server-rendered inspection view available at http://{settings.flask_host}:{settings.flask_port}/inspect")

@@ -151,5 +151,8 @@ class AnalysisService:
     def count_results(self) -> int:
         return self.repo.count()
 
+    def iter_export(self):
+        return self.repo.iter_export()
+
     def get_stats(self) -> dict[str, Any]:
         return self.repo.stats()

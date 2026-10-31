@@ -1,237 +1,98 @@
-# P_098 — Emotion Detection from Text
+# P_098 Emotion Detection from Text
 
-A hybrid NLP service that reads a sentence and returns its **emotion**, a
-**confidence** score, a **sarcasm** flag, and a short plain-English
-**explanation** — combining a transformer model, deterministic linguistic rules,
-and semantic retrieval so no single component can be wrong on its own.
+**Author: Divyansh Yadav** · HCL Industrial Training
 
-> ⚠️ This is a linguistic **tone-analysis** instrument, **not** a clinical or
-> psychological diagnostic tool.
+Flask application combining pretrained emotion and sarcasm classifiers, linguistic rules and retrieved examples. It returns seven emotion scores, confidence, uncertainty, a sarcasm flag and an explanation. SQLite stores results for inspection and CSV export. This is linguistic tone analysis, not a clinical assessment.
 
----
+## Setup
 
-## Overview
+Use **Python 3.11+** with compatible dependency wheels. Virtual environments are machine-specific and excluded from Git.
 
-Given any English text, the API classifies it into one of **7 emotions** —
-`anger`, `disgust`, `fear`, `joy`, `neutral`, `sadness`, `surprise` — and
-returns a calibrated confidence, an *uncertain* badge when the signal is weak,
-a sarcasm assessment, and a grounded rationale. Every result is persisted to
-SQLite and viewable through a REST API or a server-rendered web UI.
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
+.\.venv\Scripts\python.exe scripts/download_models.py
+.\.venv\Scripts\python.exe -m backend.app.main
+```
 
-The headline idea is a **hybrid pipeline**: a neural model gives the primary
-signal, but hand-written rules and a retrieval "k-NN vote" are blended in to
-correct it — and *every* stage has an offline fallback, so the app still runs
-with no models downloaded and no API key configured.
+Open http://127.0.0.1:5000/. Models warm before the server accepts requests; startup may take tens of seconds. Downloading models requires internet once. Set `HF_HUB_OFFLINE=1` afterward for cached offline inference. `USE_MODELS=0` selects faster but less accurate heuristics.
 
-## Key features
+`LLM_MODE=mock` uses local templates. Optional API explanations require `LLM_MODE=api`, a valid model ID, provider URL and API key. Never archive `.env`, databases, logs, environments or model weights. Rotate any key included in a previously shared archive.
 
-- 🧠 **Hybrid engine** — transformer (70%) + rule lexicon (15%) + RAG retrieval (15%), fused and calibrated.
-- 🛟 **Graceful degradation** — transformer→heuristic, embeddings→TF-IDF→keyword, LLM→template. Nothing hard-fails.
-- 🎭 **Sarcasm handling** — detects irony and *corrects the emotion* (e.g. fake praise over an adversity → anger/disgust, not joy).
-- 📏 **Uncertainty calibration** — flags low-confidence or close-call predictions instead of overclaiming.
-- 🔒 **Safety boundary** — strips prompt-injection, redacts clinical/diagnostic terms, always attaches a disclaimer.
-- 🧾 **Full traceability** — every response records which engines ran and the route taken.
-- 🌐 **REST API + Web UI + SQLite** — single-text and batch (JSON or CSV), plus a `/inspect` review dashboard.
+Production WSGI serving:
+
+```powershell
+.\.venv\Scripts\waitress-serve.exe --listen=127.0.0.1:5000 --threads=2 backend.app.main:app
+```
+
+For hosted deployment, use `python serve.py`. It runs Waitress on `0.0.0.0` and honors the hosting platform's `PORT` variable, falling back to `FLASK_PORT` (5000). See [deployment and screenshot instructions](docs/deployment.md). The existing Flask application can be deployed directly; Matplotlib is used for evaluation charts and is not a hosting platform.
+
+Docker uses Waitress and a Python HTTP health check. Container execution was not verified on the review host. Without a supplied model cache, its first startup requires model downloads. Set `USE_MODELS=0` for a lightweight smoke test.
+
+## API
+
+| Method | Path | Contract |
+|---|---|---|
+| POST | `/api/v1/emotion/process` | `{"input":"I am happy"}` |
+| POST | `/api/v1/emotion/batch` | `{"texts":["happy","sad"]}` or CSV field `file` |
+| GET | `/api/v1/emotion/results` | History with limit and offset |
+| GET | `/api/v1/emotion/results/<id>` | One stored result |
+| GET | `/api/v1/emotion/stats` | Counts and emotion distribution |
+| GET | `/api/v1/emotion/export` | Download CSV |
+| GET | `/health` | Loaded model and retrieval status |
+| GET | `/inspect` | Paginated audit view and export |
+
+Single responses contain `success`, `result`, `sources`, `warnings`, `request_id`. Batch responses identify original row numbers and attempted/succeeded/failed counts. Failed rows have an explicit error and no invented prediction. Valid rows are persisted with `mode=batch`. Limits: 4,000 characters, 500 rows and 16 MB uploads. Excess batches are rejected before processing. CSV accepts UTF-8 with/without BOM and text/sentence/input/utterance headers.
 
 ## Architecture
 
-```
-HTTP request
-   │
-   ▼
-api/routes/ ───────────► endpoints + Pydantic request validation
-   │
-   ▼
-services/analysis_service.py ──► orchestrate · persist · log · batch
-   │
-   ▼
-engines/router.py ──────► THE PIPELINE (runs every engine in order)
-   │   validator · preprocess · rules · emotion_model · sarcasm_model
-   │   retrieval(RAG) · fusion · llm(rationale) · validator(harden)
-   ▼
-repositories/results_repository.py ──► SQLite (read back by API + /inspect)
-```
+Flask routes → application service → bounded concurrent model inference → fusion → SQLite repository.
 
-Layered, framework-light domain objects, and a clean separation of concerns
-(*Application Factory*, *Blueprints*, *Service layer*, *Repository pattern*).
+Flask is the chosen implementation framework. The supplied specification names FastAPI; this remains a declared deviation, documented in the SRS. Flask serves both the API and the existing dashboard.
 
-### The analysis pipeline (9 steps)
+1. Validate and preprocess once; reuse linguistic evidence.
+2. Run rules, then run both classifiers and retrieval concurrently in a bounded three-worker pool.
+3. Fuse scores, resolve approximate sarcasm, apply eligible English confidence calibration, and flag uncertainty.
+4. Generate bounded explanation, harden output, persist and return.
 
-1. **Input validation** — trim, size-check, strip control chars, flag injection patterns.
-2. **Preprocess** — demojize, expand slang, detect negation / CAPS / language.
-3. **Rules** — lexicon emotion hints + a sarcasm-cue score (markers, praise⊕adversity contrast, punctuation, emoji).
-4. **Emotion model** — DistilRoBERTa 7-way classifier *(→ heuristic fallback)*.
-5. **Sarcasm model** — RoBERTa irony classifier *(→ rule-cue fallback)*.
-6. **Retrieval (RAG)** — MiniLM embeddings over a knowledge base + k-NN vote *(→ TF-IDF → keyword fallback)*.
-7. **Fusion & calibration** — blend signals, resolve sarcasm, apply emotion correction, decide confidence / uncertainty.
-8. **Rationale** — bounded LLM explanation *(→ deterministic template fallback)*. Never overrides the label.
-9. **Output hardening** — clamp scores, redact clinical terms, attach disclaimer, record route + latency.
+Models: `j-hartmann/emotion-english-distilroberta-base`, `cardiffnlp/twitter-roberta-base-irony`, and `sentence-transformers/all-MiniLM-L6-v2`. Corpus: 82 exemplars and 8 knowledge entries. Retrieval falls back to TF-IDF and then keyword overlap. Charts are bundled locally.
 
-## Tech stack
+Transformer fusion weights are 70% model, 15% rules and 15% retrieval; fallback weights differ. Top score < 0.40 or margin < 0.10 triggers uncertainty. Unsupported heuristic input also requires review. Detected sarcasm can shift emotion scores toward anger/disgust. Fusion weights remain hand-tuned; a fitted temperature adjusts eligible English emotion scores. The response, saved record, CSV and interface identify `confidence_method` as `temperature_scaled` or `uncalibrated_fusion`. A changed pipeline/model configuration disables an incompatible profile. Sarcasm scores remain uncalibrated. Transformer inputs truncate at 512 tokens. `TORCH_NUM_THREADS` defaults to 2. `PARALLEL_INFERENCE=0` disables concurrent inference. Restart after editing `.env`.
 
-| Layer | Choice |
-|---|---|
-| Web / API | Flask 3, Pydantic v2 |
-| Emotion model | `j-hartmann/emotion-english-distilroberta-base` |
-| Sarcasm model | `cardiffnlp/twitter-roberta-base-irony` |
-| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
-| Retrieval fallback | scikit-learn (TF-IDF + cosine) |
-| LLM rationale | any OpenAI-compatible endpoint (OpenAI / Gemini / Ollama) |
-| Storage | SQLite (stdlib `sqlite3`) |
+The LLM writes explanations only. Invalid JSON gets one retry before template fallback. Actual per-request backend choices and fallback warnings are recorded. `/health` describes loaded capability, so inspect an individual result for a query-specific fallback. CSV export reads one database snapshot to avoid duplicates or missing rows during concurrent inserts. Storage uses standard sqlite3; PostgreSQL, authentication and automatic WAL mode are not implemented.
 
-## Project structure
-
-```
-P_098-emotion-detection-text-divyansh-yadav/
-├── backend/app/
-│   ├── __init__.py            # Flask application factory
-│   ├── main.py                # entrypoint (warm-up + run server)
-│   ├── api/routes/            # analysis API + /inspect views + /health
-│   ├── core/                  # config (env) + logging
-│   ├── domain/                # emotion schema, labels, value objects
-│   ├── engines/               # the 9-step pipeline (router + engines)
-│   ├── repositories/          # SQLite persistence
-│   ├── schemas/               # Pydantic request models
-│   └── services/              # pipeline orchestration
-├── data/kb/                   # emotions.jsonl + exemplars.jsonl (RAG corpus)
-├── frontend/                  # Jinja templates + static assets
-├── prompts/                   # LLM system + task prompts
-├── tests/                     # pytest suite
-├── .env.example               # copy to .env
-├── requirements.txt
-└── pytest.ini
-```
-
-## Getting started
-
-### Prerequisites
-- **Python 3.10+**
-
-### Installation
-
-```powershell
-# 1. From the project folder, create & activate a virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1          # Windows PowerShell
-# source .venv/bin/activate           # macOS / Linux
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Create your local config
-copy .env.example .env                # Windows
-# cp .env.example .env                # macOS / Linux
-```
-
-### Models
-
-On the first run with `USE_MODELS=1`, the transformer and embedding models are
-downloaded automatically from Hugging Face into your local cache; later runs can
-set `HF_HUB_OFFLINE=1` to load them from cache without any network calls.
-
-Don't want the downloads (or offline)? Set `USE_MODELS=0` in `.env` to run the
-pipeline in **fast heuristic mode** — it uses the rule lexicon + TF-IDF and
-still returns full, valid results.
-
-### Run
-
-```powershell
-python -m backend.app.main
-```
-
-- Web dashboard → <http://127.0.0.1:5000/>
-- Inspection view → <http://127.0.0.1:5000/inspect>
-- Health check → <http://127.0.0.1:5000/health>
-
-## Configuration
-
-All settings are read from `.env` (see `.env.example`). The app runs with zero
-configuration — every value has a sensible default.
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `LLM_MODE` | `mock` | `api` = call the LLM; `mock` = offline template rationale |
-| `OPENAI_API_KEY` | *(empty)* | key for the LLM; blank forces offline mode |
-| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | any OpenAI-compatible endpoint |
-| `OPENAI_MODEL` | `gpt-4o-mini` | model name for the rationale |
-| `USE_MODELS` | `1` | `0` = skip transformers, use heuristic/TF-IDF |
-| `EMOTION_MODEL` / `SARCASM_MODEL` / `EMBEDDING_MODEL` | *(see above)* | Hugging Face model ids |
-| `UNCERTAIN_THRESHOLD` | `0.40` | below this top-score (or small margin) → *uncertain* |
-| `SARCASM_THRESHOLD` | `0.50` | sarcasm flag cutoff |
-| `RETRIEVAL_TOP_K` | `5` | exemplars retrieved per query |
-| `DATABASE_URL` | `sqlite:///emotion.sqlite3` | persistence target |
-| `FLASK_HOST` / `FLASK_PORT` | `127.0.0.1` / `5000` | server bind |
-| `MAX_INPUT_CHARS` / `MAX_BATCH_ROWS` | `4000` / `500` | request limits |
-
-> 🔐 **Never commit your real `.env`.** It's already in `.gitignore`. Keep API keys out of version control.
-
-## API reference
-
-Base path: `/api/v1/emotion`
-
-### `POST /process` — analyze one text
-
-```bash
-curl -X POST http://127.0.0.1:5000/api/v1/emotion/process \
-  -H "Content-Type: application/json" \
-  -d '{"input": "Oh great, my train got cancelled again. Just what I needed."}'
-```
-
-```jsonc
-{
-  "success": true,
-  "result": {
-    "primary_emotion": "anger",
-    "confidence": 0.62,
-    "uncertain": false,
-    "sarcasm": true,
-    "sarcasm_score": 0.99,
-    "emotion_scores": [{"label": "anger", "score": 0.62}, {"label": "disgust", "score": 0.19}],
-    "rationale": "The text exhibits sarcastic tone cues with irony...",
-    "route": ["input_validation", "preprocess", "rules", "emotion_model_transformer", "..."]
-  },
-  "sources": [ ... ],
-  "warnings": [ ... ],
-  "request_id": "req_xxxxxxxxxxxx"
-}
-```
-
-### `POST /batch` — analyze many
-JSON list: `{"texts": ["...", "..."]}`  ·  or a CSV upload (multipart field `file`,
-auto-detecting a `text`/`sentence`/`input` column).
-
-### Other endpoints
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/v1/emotion/results?limit=&offset=` | paginated history |
-| `GET` | `/api/v1/emotion/results/<id>` | one stored analysis |
-| `GET` | `/api/v1/emotion/stats` | totals + emotion distribution |
-| `GET` | `/health` | service + model status |
-
-## Testing
+## Verification
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe scripts/evaluate.py --mode hybrid
+.\.venv\Scripts\python.exe scripts/evaluate.py --mode fallback
 ```
 
-Tests run **offline and fast** (`conftest.py` sets `USE_MODELS=0`, `LLM_MODE=mock`)
-and cover the rules, validator, fusion/calibration, API, and red-team safety cases.
+69 tests pass using temporary databases and no live API calls. Hybrid evaluation verifies all three model paths for every case, disables external LLM calls, records configuration, separates startup from warm latency and computes real pass/fail status. `--check` fails when a target is missed.
 
-## How it works — fusion & sarcasm
+| Measurement | Hybrid | Heuristic + TF-IDF |
+|---|---:|---:|
+| Emotion macro-F1 | 0.913 | 0.471 |
+| Emotion accuracy | 91.4% | 45.7% |
+| Sarcasm F1 | 0.842 | 0.667 |
+| Warm mean latency | 139.2 ms | 6.3 ms |
 
-The emotion/sarcasm **labels are decided deterministically** in `fusion.py`; the
-LLM only writes the explanation. Fusion blends the three signals, then:
+Each evaluation uses 35 curated cases per task. Hybrid startup was 16.1 seconds. The under-150 ms warm mean target is met **on this host**. Timings exclude startup, HTTP and persistence; hosted hardware and concurrent traffic need separate measurement. Memory and live-provider latency were not measured. Small-sample results do not establish general accuracy.
 
-- resolves sarcasm from the irony model **and** rule cues (guarding genuine joy/sadness/neutral against false positives), and
-- when sarcasm is detected, **discounts the superficial masking emotions** (joy / surprise / neutral / sadness) and shifts that weight to **anger / disgust** — so ironic praise over a mishap is read correctly.
+## Confidence calibration and language scope
 
-## Limitations
+Experimental temperature scaling was fitted on 700 GoEmotions dev examples and checked on 350 disjoint test examples. Calibration error fell from 17.4% to 4.2%; NLL and Brier score also improved. Label accuracy on this harder sample was 47.1% and does not improve through temperature scaling. The upstream emotion model used GoEmotions, so training overlap is unknown. This is limited domain calibration, not independent proof of general accuracy. See [method, caveats and reproduction](docs/calibration-report.md).
 
-- Optimized for **English**; other languages fall back to weaker signals.
-- Fusion sarcasm thresholds are hand-tuned heuristics, not learned.
-- Batch is processed sequentially (simple and predictable, not high-throughput).
-- **Not** a clinical, medical, or psychological assessment tool.
+Common Hindi/Hinglish phrases and negation are normalized for the English models. The demo set matched 17/18 expected labels. These examples exercise supported phrases, not broad language coverage. All adapted and other non-English predictions remain uncertain and uncalibrated; Hindi/Hinglish sarcasm is not benchmarked. See [all language examples and the error](docs/language-evaluation.md).
 
----
+See [evaluation](docs/evaluation-report.md), [raw results](docs/evaluation-results.json), [fallback evaluation](docs/evaluation-report-fallback.md) and [documentation](docs/P098_Formal_Project_Documentation.md).
 
-**Project:** P_098 — Emotion Detection from Text · **Author:** Divyansh Yadav
+## Submission
+
+Submit the report and SRS, the GitHub link, and real screenshots of the local and deployed application. A ZIP and presentation are not required for this submission.
+
+Repository: https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project
+
+The report and SRS are in `docs/`, with submission copies in the workspace's `Submission-Ready` folder. Hosting and public-URL screenshots remain outstanding. Follow [deployment instructions](docs/deployment.md) after creating a hosting account and checking resource limits and pricing.

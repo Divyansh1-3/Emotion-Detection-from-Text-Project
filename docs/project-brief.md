@@ -1,22 +1,25 @@
-# P_098 — Project Brief: Emotion Detection from Text
+# Project Brief
 
-**Program:** HCL Technologies Industrial Training  
-**Project ID:** P_098  
-**Candidate Name:** Divya  
-**Submission Date:** Current Session  
+Author: Divyansh Yadav
 
----
+## Scope
 
-## 1. Project Synopsis
-The objective of Project P_098 is to construct an industrial-strength natural language processing pipeline capable of classifying human emotional affect expressed in short and medium-form English text. Beyond rudimentary binary sentiment analysis (positive vs. negative), P_098 classifies utterances across seven fine-grained affective dimensions (`anger`, `disgust`, `fear`, `joy`, `neutral`, `sadness`, `surprise`), detects subtle sarcastic nuance, and delivers calibrated, human-interpretable rationales.
+Classify English text into anger, disgust, fear, joy, neutral, sadness or surprise. Return confidence, an uncertainty flag, an approximate sarcasm assessment and an explanation. This is linguistic analysis, not a psychological diagnosis.
 
-## 2. Business & Operational Value
-* **Customer Support Escalation:** Immediate detection of escalating customer anger or sarcastic dissatisfaction in support tickets before brand damage occurs.
-* **Conversational AI Monitoring:** Auditing voice-of-customer chatbots to detect when automated dialog leaves users frustrated or confused.
-* **Social Listening & Market Research:** Accurate categorization of consumer reactions to product launches and media announcements.
+## Models
 
-## 3. Key Differentiators
-1. **Hybrid Multi-Engine Fusion:** Merges symbolic rules, pretrained deep learning transformers, and semantic RAG retrieval into a calibrated decision.
-2. **Deterministic Label Invariance:** Decisions are rooted in reproducible statistical calculations, preventing stochastic LLM hallucinations.
-3. **Frontend &harr; Backend Parity:** The backend `/inspect` view and the client dashboard query the same SQLite persistence layer, providing complete transaction auditability.
-4. **Resilient Offline Architecture:** 100% operational on CPU with zero external API keys required.
+The emotion model is j-hartmann/emotion-english-distilroberta-base. Sarcasm uses cardiffnlp/twitter-roberta-base-irony. Semantic retrieval uses sentence-transformers/all-MiniLM-L6-v2.
+
+## Frontend
+
+Flask serves Jinja templates, custom CSS and vanilla JavaScript. Chart.js is bundled locally with its license; textual score rendering remains available if the chart library fails. The audit view reads saved results and offers CSV export.
+
+## Implementation scope
+
+Flask is the chosen framework for this implementation. The supplied specification named FastAPI; this is an explicit implementation deviation. Flask provides the HTTP API and existing web interface. It does not implement FastAPI or automatic OpenAPI documentation.
+
+Common Hindi/Hinglish phrases are normalized for the English models. 17/18 curated demonstration inputs matched their expected emotion. These examples exercise supported phrases; they do not establish general multilingual accuracy. Adapted and other non-English outputs always require review. Hindi/Hinglish sarcasm was not benchmarked.
+
+Experimental temperature scaling uses 700 GoEmotions development examples and 350 disjoint test examples, with temperature 1.751. Validation calibration error fell from 17.4% to 4.2%; label accuracy remained 47.1%. The upstream model used GoEmotions, so training overlap is unknown. This is domain-specific calibration, not independent proof of general accuracy. Sarcasm and non-English scores remain uncalibrated.
+
+The measured warm mean is 139.2 ms; the under-150 ms target is passed on this host. Startup, HTTP, database writes and concurrent traffic are excluded. Hosted performance needs separate measurement.

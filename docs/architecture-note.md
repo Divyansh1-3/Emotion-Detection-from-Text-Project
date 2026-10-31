@@ -1,57 +1,41 @@
-# P_098 — Technical Architecture & Engineering Decisions
+# Architecture Note
 
-**Project:** P_098 Emotion Detection from Text  
-**Author:** Divya  
-**Target Environment:** 8 GB RAM Developer Laptop &bull; CPU-Only Inference &bull; Python 3.11
+Author: Divyansh Yadav
 
----
+## Models
 
-## 1. Core Architectural Pillars
+The emotion model is j-hartmann/emotion-english-distilroberta-base. Sarcasm uses cardiffnlp/twitter-roberta-base-irony. Semantic retrieval uses sentence-transformers/all-MiniLM-L6-v2.
 
-### 1.1 Determinism Over Generation
-A critical design decision in P_098 is that **the primary emotion label is determined strictly by deterministic mathematics (fusion.py), never by the Large Language Model (llm.py).**
-* *Why:* Large Language Models are stochastic. Prompting an LLM to "classify emotion" leads to non-reproducible outputs, hallucinated labels outside the schema, and vulnerability to prompt injection.
-* *How P_098 solves this:* Pretrained transformers output logit distributions; symbolic rules evaluate punctuation and negations; RAG fetches k-NN exemplar votes. The fusion module normalizes these into a mathematical distribution. The LLM's only role is generating a human-readable 1–2 sentence explanation grounded in the retrieved evidence.
+## Fusion
 
-### 1.2 Resource Management & 8 GB RAM Sizing
-Deploying transformer models on commodity hardware requires disciplined memory allocation:
-1. **Model Selection:**
-   * Emotion: `j-hartmann/emotion-english-distilroberta-base` (~330 MB)
-   * Sarcasm: `helinivan/english-sarcasm-detector` (~300 MB)
-   * Embeddings: `sentence-transformers/all-MiniLM-L6-v2` (~80 MB)
-   * *Total model weights:* ~710 MB in memory.
-2. **Lazy Thread-Safe Singletons:** Models are loaded into process memory only on the first inference request behind thread locks, preventing multi-worker memory multiplication.
-3. **CPU PyTorch:** Built without heavy CUDA runtime dependencies.
+With the emotion transformer, blend model/rules/retrieval scores at 70/15/15. With heuristic rules, use 75% rules and 25% retrieval. With no rule evidence, blend the neutral heuristic and retrieval at 60/40 and require review. Fusion weights remain hand-tuned. A fitted temperature then adjusts eligible English scores without changing the leading label. Fallbacks and incompatible profiles remain explicitly uncalibrated.
 
----
+## Sarcasm
 
-## 2. Signal Fusion Mathematics
+Context, model output and lexical cues determine the sarcasm flag. Detected irony may redistribute emotion scores toward anger or disgust. Common sincere phrases such as my favorite and cannot wait require adverse context before acting as sarcasm cues. False positives and false negatives remain possible.
 
-The fused probability for each emotion label $e \in \text{EMOTION\_LABELS}$ is calculated as:
+## Uncertainty
 
-$$P_{\text{fused}}(e) = w_{\text{ml}} \cdot P_{\text{ml}}(e) + w_{\text{rule}} \cdot P_{\text{rule}}(e) + w_{\text{knn}} \cdot P_{\text{knn}}(e)$$
+Flag results when confidence is below 0.40 or the leading-score margin is below 0.10. Heuristic predictions without clear emotion cues also require review. Never interpret the percentage as a guaranteed probability of correctness.
 
-Where default weights are:
-* $w_{\text{ml}} = 0.70$ (Deep transformer probability)
-* $w_{\text{rule}} = 0.15$ (Deterministic lexicon & negation cues)
-* $w_{\text{knn}} = 0.15$ (Retrieved exemplar nearest-neighbor vote)
+## Storage
 
-When offline or in heuristic mode:
-* $w_{\text{ml}} = 0.0$
-* $w_{\text{rule}} = 0.60$
-* $w_{\text{knn}} = 0.40$
+The standard sqlite3 repository stores analyses synchronously. JSON arrays hold scores, sources, routes, engines and warnings. There is no ORM, PostgreSQL adapter, immutable audit ledger or automatic WAL configuration.
 
-### Margin Calibration:
-Let $e_{(1)}$ be the highest scoring emotion and $e_{(2)}$ be the second highest:
-$$\Delta = P_{\text{fused}}(e_{(1)}) - P_{\text{fused}}(e_{(2)})$$
+## Execution
 
-The utterance is flagged as **Uncertain** if:
-$$P_{\text{fused}}(e_{(1)}) < \tau_{\text{uncertain}} \quad (0.40) \quad \lor \quad \Delta < 0.10$$
+After preprocessing and rules, a bounded three-worker pool runs both classifiers and retrieval concurrently. Fusion waits for their results. PARALLEL_INFERENCE=0 disables this optimization. Model singletons avoid repeated loading; models and language detection warm before requests. Two PyTorch threads are the default. The environment file is read once per process; restart after configuration changes.
 
----
+## Fallbacks
 
-## 3. Concurrency & SQLite Persistence
+Missing models fall back to linguistic heuristics. Retrieval falls back from embeddings to TF-IDF and then keyword overlap, or empty for no corpus. Each result records the actual request backend and warnings. Health reports loaded capability; an individual query can still fail. Explanations fall back to a template. Dependencies and storage must still be available.
 
-* SQLite is accessed via thread-safe connections with Python's `threading.Lock`.
-* Transactions are committed synchronously to maintain immediate consistency between the JSON API and the server-rendered `/inspect` dashboard.
-* The persistence abstraction (`ResultsRepository`) cleanly isolates database logic, allowing production swapping to PostgreSQL simply by changing `DATABASE_URL=postgresql://user:pass@host/db`.
+## Implementation scope
+
+Flask is the chosen framework for this implementation. The supplied specification named FastAPI; this is an explicit implementation deviation. Flask provides the HTTP API and existing web interface. It does not implement FastAPI or automatic OpenAPI documentation.
+
+Common Hindi/Hinglish phrases are normalized for the English models. 17/18 curated demonstration inputs matched their expected emotion. These examples exercise supported phrases; they do not establish general multilingual accuracy. Adapted and other non-English outputs always require review. Hindi/Hinglish sarcasm was not benchmarked.
+
+Experimental temperature scaling uses 700 GoEmotions development examples and 350 disjoint test examples, with temperature 1.751. Validation calibration error fell from 17.4% to 4.2%; label accuracy remained 47.1%. The upstream model used GoEmotions, so training overlap is unknown. This is domain-specific calibration, not independent proof of general accuracy. Sarcasm and non-English scores remain uncalibrated.
+
+The measured warm mean is 139.2 ms; the under-150 ms target is passed on this host. Startup, HTTP, database writes and concurrent traffic are excluded. Hosted performance needs separate measurement.

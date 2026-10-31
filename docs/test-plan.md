@@ -1,36 +1,11 @@
-# P_098 — Comprehensive Test & Quality Assurance Plan
+# Test plan and verification record
 
----
+Author: Divyansh Yadav
 
-## 1. Test Strategy & Isolation
+Run `python -m pytest -q`. The current suite has 69 passing tests, including rule/fusion/validator units, API and SQLite integration, adversarial strings, malformed batch schemas, atomic limits, BOM CSV headers, explicit row errors, sincere positive phrases, unknown fallback uncertainty, CSV export escaping, isolated application databases and malformed LLM responses, snapshot export under concurrent inserts, actual retrieval fallback traces, stale-index reload, confidence-profile safeguards, legacy database migration and Hindi/Hinglish normalization/negation.
 
-The test suite is structured into three distinct layers to ensure rapid feedback without requiring external APIs or GPU acceleration:
+Tests use temporary SQLite files and disable models and live API calls. Full model evaluation is separate: `python scripts/evaluate.py --mode hybrid`. Fallback evaluation uses `--mode fallback`. Run configurations and raw results are saved in docs/evaluation-results*.json. Target failures are preserved rather than reclassified as passes.
 
-1. **Deterministic Unit Tests (No ML / No Network):**
-   * `tests/test_rules.py`: Emojis, slang expansion, negations, punctuation contrast, sarcasm scoring.
-   * `tests/test_fusion.py`: Weight blending, confidence calibration, uncertainty margin checks.
-   * `tests/test_validator.py`: Input length cap, blank text rejection, clinical term redaction, disclaimer insertion.
-2. **API & Persistence Integration Tests:**
-   * `tests/test_api.py`: Tests `/health`, `/process`, `/batch`, `/results`, `/stats`, `/`, and `/inspect` routes against an isolated temporary SQLite database fixture.
-3. **Adversarial Red-Team Tests:**
-   * `tests/test_redteam.py`: Direct prompt-injection attempts, instructions-override simulation, clinical diagnostic queries.
+Scope limits: the dataset has 35 curated cases per task. Automated tests do not establish broad semantic accuracy, production security, live-provider availability or cross-platform Docker/browser behavior.
 
----
-
-## 2. Test Execution Command
-
-Run all tests via pytest in the virtual environment:
-```bash
-pytest
-```
-
-Expected output:
-```text
-tests/test_rules.py .....                                                [ 25%]
-tests/test_fusion.py ...                                                 [ 40%]
-tests/test_validator.py .....                                            [ 65%]
-tests/test_api.py ......                                                 [ 90%]
-tests/test_redteam.py ...                                                [100%]
-
-============================== 22 passed in 1.45s ==============================
-```
+Production smoke verification starts `serve.py` on an assigned PORT with both transformers and embeddings, submits an HTTP analysis, checks detail rendering and verifies that the calibration method survives persistence and CSV export. Docker and deployed browser checks remain separate.

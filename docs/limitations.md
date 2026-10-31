@@ -1,30 +1,29 @@
-# P_098 — System Limitations & Failure Modes
+# Limitations
 
-Understanding failure boundaries is critical for deploying NLP in high-stakes environments.
+Author: Divyansh Yadav
 
----
+## Sarcasm
 
-## 1. Known Failure Modes
+Context, model output and lexical cues determine the sarcasm flag. Detected irony may redistribute emotion scores toward anger or disgust. Common sincere phrases such as my favorite and cannot wait require adverse context before acting as sarcasm cues. False positives and false negatives remain possible.
 
-### 1.1 Deadpan / Implicit Sarcasm
-* *Limitation:* The sarcasm model and rule cues rely heavily on lexical incongruity (e.g. positive adjectives with negative situations) or punctuation markers (`!`, `...`, caps).
-* *Failure Case:* "I really enjoy sitting in morning traffic." Without exclamation marks or known negative context, the system may classify this literally as `joy`.
-* *Mitigation:* Sarcasm is exposed as a probability score with explicit warnings; the uncertainty badge flags low-margin cases.
+## Uncertainty
 
-### 1.2 Code-Switching & Non-Standard Dialects
-* *Limitation:* The pretrained DistilRoBERTa model was primarily trained on standard English text and GoEmotions Reddit corpora.
-* *Failure Case:* Heavy regional slang, multilingual code-switching (e.g., Hinglish, Spanglish), or obscure acronyms may degrade classification accuracy.
-* *Mitigation:* The `preprocess.py` engine translates common internet slang, and `langdetect` flags non-English input text.
+Flag results when confidence is below 0.40 or the leading-score margin is below 0.10. Heuristic predictions without clear emotion cues also require review. Never interpret the percentage as a guaranteed probability of correctness.
 
-### 1.3 Extremely Brief Utterances
-* *Limitation:* Inputs consisting of single words or ambiguous particles (e.g., "Right.", "Fine.", "Well...") lack sufficient semantic context.
-* *Failure Case:* High probability of being classified as `neutral` with low confidence.
-* *Mitigation:* The system triggers the `uncertain` flag when confidence is $< 0.40$, alerting operators.
+## Fallbacks
 
----
+Missing models fall back to linguistic heuristics. Retrieval falls back from embeddings to TF-IDF and then keyword overlap, or empty for no corpus. Each result records the actual request backend and warnings. Health reports loaded capability; an individual query can still fail. Explanations fall back to a template. Dependencies and storage must still be available.
 
-## 2. Safety & Ethical Boundaries
+## Bounded explanation
 
-1. **Non-Clinical Guarantee:** P_098 does not assess mental health, depression, suicidal ideation, or personality disorders.
-2. **Deterministic Bias:** Pretrained transformer models inherit societal biases present in public social media corpora.
-3. **No Autonomous Clinical Action:** Outputs must never be used to make automated psychiatric decisions or deny critical services.
+The optional OpenAI-compatible client writes explanations only; it cannot change the final label. Malformed JSON gets one retry and then a template. API failures use the template. Default mock mode makes no API calls. Live provider access requires a valid independently configured key.
+
+## Implementation scope
+
+Flask is the chosen framework for this implementation. The supplied specification named FastAPI; this is an explicit implementation deviation. Flask provides the HTTP API and existing web interface. It does not implement FastAPI or automatic OpenAPI documentation.
+
+Common Hindi/Hinglish phrases are normalized for the English models. 17/18 curated demonstration inputs matched their expected emotion. These examples exercise supported phrases; they do not establish general multilingual accuracy. Adapted and other non-English outputs always require review. Hindi/Hinglish sarcasm was not benchmarked.
+
+Experimental temperature scaling uses 700 GoEmotions development examples and 350 disjoint test examples, with temperature 1.751. Validation calibration error fell from 17.4% to 4.2%; label accuracy remained 47.1%. The upstream model used GoEmotions, so training overlap is unknown. This is domain-specific calibration, not independent proof of general accuracy. Sarcasm and non-English scores remain uncalibrated.
+
+The measured warm mean is 139.2 ms; the under-150 ms target is passed on this host. Startup, HTTP, database writes and concurrent traffic are excluded. Hosted performance needs separate measurement.

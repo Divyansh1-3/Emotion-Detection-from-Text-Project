@@ -22,6 +22,7 @@ from backend.app.domain.emotion_schema import (
     sorted_scores,
 )
 from backend.app.engines.rules import RuleAnalysisResult
+from backend.app.engines.calibration import calibrate_scores
 
 
 def fuse_signals(
@@ -30,6 +31,7 @@ def fuse_signals(
     knn_dist: dict[str, float],
     sarcasm_ml_prob: float,
     ml_backend: str = "transformer",
+    calibration_eligible: bool = False,
 ) -> dict[str, Any]:
     """Fuse probabilistic, rule-based, and retrieval signals into calibrated predictions."""
     settings = get_settings()
@@ -135,6 +137,7 @@ def fuse_signals(
         uniform = round(1.0 / len(EMOTION_LABELS), 4)
         normalized = {k: uniform for k in EMOTION_LABELS}
 
+    normalized, confidence_method = calibrate_scores(normalized, calibration_eligible)
     ordered = sorted_scores(normalized)
     top_label = ordered[0].label
     top_score = ordered[0].score
@@ -173,4 +176,5 @@ def fuse_signals(
         "sarcasm": is_sarcastic,
         "sarcasm_score": sarcasm_prob,
         "warnings": warnings,
+        "confidence_method": confidence_method,
     }

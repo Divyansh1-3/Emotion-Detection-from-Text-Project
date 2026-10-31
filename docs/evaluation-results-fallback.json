@@ -1,0 +1,154 @@
+{
+  "timestamp_utc": "2026-10-31T19:34:28.730412+00:00",
+  "mode": "fallback",
+  "retrieval": "tfidf",
+  "llm": "mock",
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "cpu": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+  "torch_threads": "2",
+  "startup_ms": 427.2497999991174,
+  "parallel_inference": true,
+  "calibration_status": "temperature_scaled",
+  "actual_path_counts": {
+    "emotion_model_heuristic": 70,
+    "sarcasm_model_heuristic": 70,
+    "retrieval_rag_tfidf": 70
+  },
+  "confidence_method_counts": {
+    "uncalibrated_fusion": 70
+  },
+  "emotion": {
+    "total": 35,
+    "accuracy": 0.45714285714285713,
+    "macro_f1": 0.4714285714285715,
+    "weighted_f1": 0.4714285714285714,
+    "per_class": {
+      "anger": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.3333333333333333,
+        "support": 5
+      },
+      "disgust": {
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.5714285714285714,
+        "support": 5
+      },
+      "fear": {
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.5714285714285714,
+        "support": 5
+      },
+      "joy": {
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "support": 5
+      },
+      "neutral": {
+        "precision": 0.21739130434782608,
+        "recall": 1.0,
+        "f1": 0.35714285714285715,
+        "support": 5
+      },
+      "sadness": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.3333333333333333,
+        "support": 5
+      },
+      "surprise": {
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.3333333333333333,
+        "support": 5
+      }
+    },
+    "avg_latency_ms": 6.282979999689685,
+    "p95_latency_ms": 10.501889997976832,
+    "y_true": [
+      "joy",
+      "joy",
+      "joy",
+      "joy",
+      "joy",
+      "anger",
+      "anger",
+      "anger",
+      "anger",
+      "anger",
+      "disgust",
+      "disgust",
+      "disgust",
+      "disgust",
+      "disgust",
+      "fear",
+      "fear",
+      "fear",
+      "fear",
+      "fear",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "sadness",
+      "sadness",
+      "sadness",
+      "sadness",
+      "sadness",
+      "surprise",
+      "surprise",
+      "surprise",
+      "surprise",
+      "surprise"
+    ],
+    "y_pred": [
+      "joy",
+      "joy",
+      "neutral",
+      "joy",
+      "joy",
+      "neutral",
+      "anger",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "disgust",
+      "neutral",
+      "disgust",
+      "neutral",
+      "neutral",
+      "fear",
+      "fear",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "neutral",
+      "sadness",
+      "joy",
+      "neutral",
+      "surprise",
+      "neutral",
+      "neutral"
+    ]
+  },
+  "sarcasm": {
+    "total": 35,
+    "accuracy": 0.7142857142857143,
+    "precision": 1.0,
+    "recall": 0.5,
+    "f1": 0.6666666666666666
+  }
+}

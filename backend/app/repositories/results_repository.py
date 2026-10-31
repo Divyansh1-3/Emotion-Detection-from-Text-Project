@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
 
@@ -53,15 +54,22 @@ class ResultsRepository:
         self.init_db()
 
     # ---- connection / schema ------------------------------------------------
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
 
     def init_db(self) -> None:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._lock, self._connect() as conn:
             conn.executescript(_SCHEMA)
+            if "confidence_method" not in {row[1] for row in conn.execute("PRAGMA table_info(analyses)")}:
+                conn.execute("ALTER TABLE analyses ADD COLUMN confidence_method TEXT NOT NULL DEFAULT 'uncalibrated_fusion'")
 
     # ---- writes -------------------------------------------------------------
     def save(self, result: AnalysisResult) -> int:
@@ -71,8 +79,8 @@ class ResultsRepository:
                 """INSERT INTO analyses
                    (request_id, session_id, mode, input_text, language, primary_emotion,
                     confidence, uncertain, sarcasm, sarcasm_score, rationale, llm_used,
-                    latency_ms, engines_used, route, emotion_scores, sources, warnings, created_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    latency_ms, engines_used, route, emotion_scores, sources, warnings, created_at, confidence_method)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     d["request_id"], d["session_id"], d["mode"], d["input_text"], d["language"],
                     d["primary_emotion"], float(d["confidence"]), int(bool(d["uncertain"])),
@@ -80,7 +88,7 @@ class ResultsRepository:
                     int(bool(d["llm_used"])), float(d["latency_ms"]),
                     json.dumps(d["engines_used"]), json.dumps(d["route"]),
                     json.dumps(d["emotion_scores"]), json.dumps(d["sources"]),
-                    json.dumps(d["warnings"]), d["created_at"],
+                    json.dumps(d["warnings"]), d["created_at"], d["confidence_method"],
                 ),
             )
             conn.commit()
@@ -117,6 +125,14 @@ class ResultsRepository:
     def count(self) -> int:
         with self._lock, self._connect() as conn:
             return int(conn.execute("SELECT COUNT(*) AS n FROM analyses").fetchone()["n"])
+
+    def iter_export(self, page_size: int = 500):
+        """Read one SQLite snapshot with a single cursor, despite concurrent inserts."""
+        with self._connect() as conn:
+            cursor = conn.execute("SELECT * FROM analyses ORDER BY id DESC")
+            while rows := cursor.fetchmany(page_size):
+                for row in rows:
+                    yield self._row_to_dict(row)
 
     def stats(self) -> dict[str, Any]:
         with self._lock, self._connect() as conn:

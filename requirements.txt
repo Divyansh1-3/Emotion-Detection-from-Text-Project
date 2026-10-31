@@ -2,7 +2,7 @@
 # P_098 — Emotion Detection from Text · Python dependencies
 # ─────────────────────────────────────────────────────────────────────────────
 # Direct dependencies only. Transitive packages (huggingface-hub, tokenizers,
-# safetensors, scipy, jinja2, httpx, joblib, ...) are resolved automatically.
+# safetensors, jinja2, httpx, joblib, ...) are resolved automatically.
 # Pins marked "==" are the exact versions verified in this project's .venv.
 # Requires Python 3.11+ (NumPy 2.4).
 #
@@ -20,6 +20,7 @@ transformers==5.18.0
 sentence-transformers==6.1.0
 torch==2.14.0            # inference backend for the transformer + embedding models
 scikit-learn>=1.4        # TF-IDF + cosine-similarity retrieval fallback
+scipy>=1.11             # temperature-fitting optimizer for calibration
 numpy==2.4.6
 
 # ── Text preprocessing (optional — the pipeline degrades gracefully if absent)

@@ -168,6 +168,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Confidence
     const confPct = (res.confidence * 100).toFixed(1);
     confidenceValue.textContent = `${confPct}%`;
+    document.getElementById("confidenceExplanation").textContent = res.confidence_method === "temperature_scaled"
+      ? "Experimental temperature-scaled emotion scores, fitted on English examples. Confidence is not a guarantee of correctness; sarcasm scores remain uncalibrated."
+      : "Uncalibrated scores combining model, rule and retrieval signals. These percentages are not measured probabilities of correctness.";
 
     // Flags
     if (res.uncertain) {
@@ -270,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
         labels: labels,
         datasets: [
           {
-            label: "Probability (%)",
+            label: "Emotion score (%)",
             data: values,
             backgroundColor: colors,
             borderRadius: 6,
@@ -410,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const statusText = row.uncertain ? "Uncertain" : "Clear";
 
       tr.innerHTML = `
-        <td class="font-mono">${idx + 1}</td>
+        <td class="font-mono">${row.row_number || idx + 1}</td>
         <td class="text-truncate" title="${escapeHtml(row.input_text)}">${escapeHtml(row.input_text)}</td>
         <td><span class="emotion-pill ${emotion}">${EMOTION_EMOJIS[emotion] || ""} ${emotion}</span></td>
         <td class="font-mono">${conf}%</td>

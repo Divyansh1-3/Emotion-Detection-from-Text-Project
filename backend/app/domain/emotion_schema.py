@@ -78,6 +78,7 @@ class AnalysisResult:
     request_id: str = ""
     session_id: str = ""
     mode: str = "single"              # "single" | "batch"
+    confidence_method: str = "uncalibrated_fusion"
     id: int | None = None
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 

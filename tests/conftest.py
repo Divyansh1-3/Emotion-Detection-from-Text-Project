@@ -18,3 +18,4 @@ atexit.register(_test_dir.cleanup)
 os.environ["DATABASE_URL"] = "sqlite:///" + str(Path(_test_dir.name) / "test.sqlite3")
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["CALIBRATION_ENABLED"] = "0"

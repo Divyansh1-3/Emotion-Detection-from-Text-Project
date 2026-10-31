@@ -1,30 +1,29 @@
-# P_098 — Functional & Non-Functional Requirements Specification
+# Requirements
 
----
+Author: Divyansh Yadav
 
-## 1. Functional Requirements (FR)
+## Scope
 
-| Req ID | Requirement Description | Verification Method | Implemented Module |
-| :--- | :--- | :--- | :--- |
-| **FR-01** | Multi-class emotion classification into 7 standard labels | Unit test & benchmark | `emotion_model.py`, `fusion.py` |
-| **FR-02** | Explicit sarcasm detection surfaced as a flag with score | Unit test & eval script | `sarcasm_model.py`, `rules.py` |
-| **FR-03** | Calibrated confidence score with uncertainty margin detection | Unit test | `fusion.py` (`decide_uncertain`) |
-| **FR-04** | Grounded 1-2 sentence rationale citing linguistic cues | Unit & API tests | `llm.py`, `prompts/tasks/` |
-| **FR-05** | Semantic RAG retrieval over emotion definitions and exemplars | Integration test | `retrieval.py`, `data/kb/` |
-| **FR-06** | RESTful JSON API following teacher's contract (`/process`, `/batch`, `/results`) | API integration tests | `backend/app/api/routes/` |
-| **FR-07** | Batch CSV ingestion and processing (up to 500 rows) | Batch API test | `analysis_service.py` |
-| **FR-08** | Server-side `/inspect` view for historical transaction audit | Manual & view tests | `views.py`, `inspect.html` |
-| **FR-09** | Persistence of all transaction results to SQLite | Database integration | `results_repository.py` |
-| **FR-10** | Safety boundary validation: clinical term redaction & injection defense | Red-team test suite | `validator.py`, `test_redteam.py` |
+Classify English text into anger, disgust, fear, joy, neutral, sadness or surprise. Return confidence, an uncertainty flag, an approximate sarcasm assessment and an explanation. This is linguistic analysis, not a psychological diagnosis.
 
----
+## Input rules
 
-## 2. Non-Functional Requirements (NFR)
+Accept 1 to 4,000 characters after sanitization. Reject empty/control-only input and invalid batch item types. Transformer tokenizers truncate at 512 tokens. CSV uploads are limited to 16 MB and 500 rows; oversized batches are rejected before processing.
 
-| NFR ID | Category | Target Metric | Achieved Result |
-| :--- | :--- | :--- | :--- |
-| **NFR-01** | **Accuracy** | Macro-F1 &ge; 0.70 on evaluation set | **0.880+ Macro-F1** |
-| **NFR-02** | **Memory** | Operational on 8 GB RAM laptop | **< 1.2 GB RAM usage** |
-| **NFR-03** | **Latency** | Single utterance CPU inference < 150 ms | **< 100 ms mean CPU latency** |
-| **NFR-04** | **Reliability** | 100% offline fallback when API key missing | **Instant deterministic fallback** |
-| **NFR-05** | **Security** | Prompt injection attacks processed safely as data | **Verified in test_redteam.py** |
+## Batch results
+
+Preserve row positions and report each validation error explicitly. Return counts for attempted, successful and failed rows. Failed rows do not fabricate a neutral prediction. Valid rows use mode=batch and are persisted. Entirely malformed requests return HTTP 400 or 422.
+
+## Frontend
+
+Flask serves Jinja templates, custom CSS and vanilla JavaScript. Chart.js is bundled locally with its license; textual score rendering remains available if the chart library fails. The audit view reads saved results and offers CSV export.
+
+## Implementation scope
+
+Flask is the chosen framework for this implementation. The supplied specification named FastAPI; this is an explicit implementation deviation. Flask provides the HTTP API and existing web interface. It does not implement FastAPI or automatic OpenAPI documentation.
+
+Common Hindi/Hinglish phrases are normalized for the English models. 17/18 curated demonstration inputs matched their expected emotion. These examples exercise supported phrases; they do not establish general multilingual accuracy. Adapted and other non-English outputs always require review. Hindi/Hinglish sarcasm was not benchmarked.
+
+Experimental temperature scaling uses 700 GoEmotions development examples and 350 disjoint test examples, with temperature 1.751. Validation calibration error fell from 17.4% to 4.2%; label accuracy remained 47.1%. The upstream model used GoEmotions, so training overlap is unknown. This is domain-specific calibration, not independent proof of general accuracy. Sarcasm and non-English scores remain uncalibrated.
+
+The measured warm mean is 139.2 ms; the under-150 ms target is passed on this host. Startup, HTTP, database writes and concurrent traffic are excluded. Hosted performance needs separate measurement.

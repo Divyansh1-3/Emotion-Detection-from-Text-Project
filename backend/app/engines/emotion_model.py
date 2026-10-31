@@ -48,14 +48,14 @@ def _normalise(dist: dict[str, float]) -> dict[str, float]:
     return {label: round(dist.get(label, 0.0) / total, 4) for label in EMOTION_LABELS}
 
 
-def _heuristic(text: str) -> dict[str, float]:
-    hint = analyze_rules(text).emotion_hint
+def _heuristic(text: str, rule_result=None) -> dict[str, float]:
+    hint = (rule_result if rule_result is not None else analyze_rules(text)).emotion_hint
     if not hint:
         return _normalise({"neutral": 1.0})
     return _normalise({label: hint.get(label, 0.0) for label in EMOTION_LABELS})
 
 
-def predict_emotions(text: str) -> tuple[dict[str, float], str]:
+def predict_emotions(text: str, rule_result=None) -> tuple[dict[str, float], str]:
     """Return (distribution over the 7 labels, backend used: 'transformer'|'heuristic')."""
     settings = get_settings()
     if settings.use_models:
@@ -68,7 +68,7 @@ def predict_emotions(text: str) -> tuple[dict[str, float], str]:
                 return _normalise({label: raw.get(label, 0.0) for label in EMOTION_LABELS}), "transformer"
             except Exception:
                 pass
-    return _heuristic(text), "heuristic"
+    return _heuristic(text, rule_result), "heuristic"
 
 
 def is_model_loaded() -> bool:

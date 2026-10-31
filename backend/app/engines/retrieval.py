@@ -81,6 +81,9 @@ def initialize_index(force_reload: bool = False) -> bool:
         if _index_cache["ready"] and not force_reload:
             return True
 
+        _index_cache.update(corpus=[], embeddings=None, tfidf_vectorizer=None,
+                            tfidf_matrix=None, ready=False)
+
         corpus = load_corpus(settings.kb_dir)
         if not corpus:
             _index_cache["ready"] = True
@@ -114,17 +117,17 @@ def initialize_index(force_reload: bool = False) -> bool:
         return True
 
 
-def retrieve_similar(query: str, top_k: int | None = None) -> list[RetrievedItem]:
-    """Retrieve top-k most similar exemplars/knowledge snippets for a query."""
+def retrieve_with_backend(query: str, top_k: int | None = None) -> tuple[list[RetrievedItem], str]:
+    """Return evidence and the backend actually used for this request."""
     settings = get_settings()
-    k = top_k or settings.retrieval_top_k
+    k = max(1, top_k if top_k is not None else settings.retrieval_top_k)
 
     if not _index_cache["ready"]:
         initialize_index()
 
     corpus = _index_cache["corpus"]
     if not corpus:
-        return []
+        return [], "empty"
 
     # Dense embedding search
     if _index_cache["embeddings"] is not None and settings.use_models:
@@ -147,7 +150,7 @@ def retrieve_similar(query: str, top_k: int | None = None) -> list[RetrievedItem
                             source=item.get("source", "exemplar"),
                         )
                     )
-                return results
+                return results, "embeddings"
             except Exception:
                 pass
 
@@ -171,7 +174,7 @@ def retrieve_similar(query: str, top_k: int | None = None) -> list[RetrievedItem
                         source=item.get("source", "exemplar"),
                     )
                 )
-            return results
+            return results, "tfidf"
         except Exception:
             pass
 
@@ -194,7 +197,12 @@ def retrieve_similar(query: str, top_k: int | None = None) -> list[RetrievedItem
                 source=item.get("source", "exemplar"),
             )
         )
-    return results
+    return results, "keyword"
+
+
+def retrieve_similar(query: str, top_k: int | None = None) -> list[RetrievedItem]:
+    """Compatibility helper for callers that need only the evidence list."""
+    return retrieve_with_backend(query, top_k)[0]
 
 
 def compute_knn_vote(retrieved: list[RetrievedItem], min_similarity: float = 0.25) -> dict[str, float]:
@@ -222,8 +230,11 @@ def compute_knn_vote(retrieved: list[RetrievedItem], min_similarity: float = 0.2
 
 
 def retrieval_backend() -> str:
+    """Loaded index capability; request traces use retrieve_with_backend instead."""
     if not _index_cache["ready"]:
         return "not_initialized"
+    if not _index_cache["corpus"]:
+        return "empty"
     if _index_cache["embeddings"] is not None and get_settings().use_models:
         return "embeddings"
     if _index_cache["tfidf_matrix"] is not None:

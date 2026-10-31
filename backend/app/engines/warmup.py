@@ -14,6 +14,8 @@ from backend.app.core.config import get_settings
 def warm_up_models() -> None:
     """Pre-warm transformer pipelines and embedding index into RAM."""
     settings = get_settings()
+    from backend.app.engines.preprocess import preprocess
+    preprocess("This is a warm up sentence for language detection.")
     if not settings.use_models:
         print("[*] Models disabled in settings (USE_MODELS=0). Running in fast heuristic mode.")
         return

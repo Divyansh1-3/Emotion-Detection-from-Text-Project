@@ -20,6 +20,7 @@ from backend.app.core.config import get_settings
 from backend.app.engines.emotion_model import is_model_loaded as is_emotion_loaded
 from backend.app.engines.sarcasm_model import is_model_loaded as is_sarcasm_loaded
 from backend.app.engines.retrieval import retrieval_backend
+from backend.app.engines.calibration import calibration_profile
 from backend.app.schemas.analysis import AnalyzeRequest, BatchRequest
 from backend.app.services.analysis_service import AnalysisService
 
@@ -108,18 +109,15 @@ def list_results():
 def export_results():
     """Download stored results as CSV; neutralize spreadsheet formula cells."""
     stream = io.StringIO(newline="")
-    columns = ["id", "request_id", "input_text", "primary_emotion", "confidence", "uncertain", "sarcasm", "rationale", "created_at"]
+    columns = ["id", "request_id", "input_text", "primary_emotion", "confidence", "uncertain", "sarcasm", "rationale", "created_at", "confidence_method"]
     writer = csv.DictWriter(stream, fieldnames=columns)
     writer.writeheader()
-    offset = 0
-    while records := _service.list_results(limit=500, offset=offset):
-        for record in records:
-            row = {key: record.get(key, "") for key in columns}
-            for key, value in row.items():
-                if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
-                    row[key] = "'" + value
-            writer.writerow(row)
-        offset += len(records)
+    for record in _service.iter_export():
+        row = {key: record.get(key, "") for key in columns}
+        for key, value in row.items():
+            if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
+                row[key] = "'" + value
+        writer.writerow(row)
     return Response(stream.getvalue(), mimetype="text/csv", headers={"Content-Disposition": "attachment; filename=emotion-results.csv"})
 
 
@@ -142,6 +140,7 @@ def get_stats():
 def health_check():
     """GET /health — Service health and model status."""
     settings = get_settings()
+    profile, calibration_status = calibration_profile()
     return jsonify({
         "status": "ok",
         "service": "P_098 Emotion Detection from Text",
@@ -153,7 +152,10 @@ def health_check():
             "embedding_model": settings.embedding_model,
             "retrieval_backend": retrieval_backend(),
         },
-        "degraded": not (is_emotion_loaded() and is_sarcasm_loaded()),
+        "degraded": not (is_emotion_loaded() and is_sarcasm_loaded() and retrieval_backend() == "embeddings"),
+        "confidence_calibration": {"status": calibration_status,
+                                   "scope": "English with both classifiers and embedding retrieval",
+                                   "temperature": profile["temperature"] if profile else None},
         "llm": {
             "mode": settings.llm_mode,
             "enabled": settings.llm_enabled,

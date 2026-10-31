@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from backend.app.engines.language_support import adapt_language
 
 try:  # optional dependency
     import emoji as _emoji
@@ -55,6 +56,7 @@ class PreprocessResult:
     caps_ratio: float = 0.0
     has_negation: bool = False
     quoted_spans: list[str] = field(default_factory=list)
+    language_adapted: bool = False
 
 
 def _demojize(text: str) -> str:
@@ -97,7 +99,8 @@ def preprocess(text: str) -> PreprocessResult:
     quoted_spans = re.findall(r'"([^"]{2,60})"', raw) + re.findall(r"“([^”]{2,60})”", raw)
 
     # Expand slang for the cleaned text handed to models / lexicon.
-    cleaned = raw
+    adapted = adapt_language(raw)
+    cleaned = adapted.text
     for k, v in SLANG.items():
         cleaned = re.sub(rf"\b{re.escape(k)}\b", v, cleaned, flags=re.IGNORECASE)
     tokens = re.findall(r"[a-z']+", cleaned.lower())
@@ -109,7 +112,7 @@ def preprocess(text: str) -> PreprocessResult:
         raw=raw,
         cleaned=cleaned.strip(),
         demojized=demojized,
-        language=_detect_language(raw),
+        language=adapted.language or _detect_language(raw),
         tokens=tokens,
         has_emoji=has_emoji,
         emoji_names=emoji_names,
@@ -120,6 +123,7 @@ def preprocess(text: str) -> PreprocessResult:
         caps_ratio=round(caps_ratio, 3),
         has_negation=has_negation,
         quoted_spans=quoted_spans,
+        language_adapted=adapted.applied,
     )
 
 
