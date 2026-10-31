@@ -86,4 +86,12 @@ The model trained on 16,000 examples from the [DAIR-AI Emotion dataset](data/REA
 
 Retraining is optional. It overwrites the saved model and evaluation report using the included data. Keep the pinned scikit-learn version: changing it requires retraining the saved model and rerunning the checks. Only load model files you trust.
 
-The earlier Flask implementation and its documents were preserved outside this repository before simplification. Old reports describe the previous system and its measurements; use this README for the current app.
+## Submission documents
+
+These documents describe the current English-only Streamlit dashboard:
+
+- [Project report](docs/P_098_Emotion_Detector_Documentation.docx)
+- [Software Requirements Specification](docs/BTech_3rd_Year_SRS_Emotion_Detector.docx)
+- [One-page synopsis](docs/P_098_Emotion_Detector_Synopsis.docx)
+
+All 14 automated model and interface checks passed. [Verification records](docs/verification.json) include example predictions and local inference timings. The documents include the measured dataset results and distinguish local verification from the public deployment step, which remains pending.
