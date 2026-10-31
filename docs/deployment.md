@@ -2,13 +2,16 @@
 
 Public URL: https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/
 
-The owner confirmed anonymous access, emotion prediction, history and download on the
-earlier six-label app on 1 November 2026. The transformer upgrade requires a fresh deployment
-and the checks below; it has not yet been verified on Community Cloud.
+The transformer implementation was published as commit `7f159b6`. Its
+[GitHub Actions workflow](https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41246313817)
+passed dependency installation and the contract/interface and real-model suites.
+On 1 November 2026, the owner reported uploading and testing the updated public app
+successfully. Independent live browser verification was unavailable. The earlier
+private-window check covered the previous six-label version.
 
-## Update the existing app
+## Publish a subsequent update
 
-1. Commit and push the restored application, tests, documentation and `requirements.txt`
+1. Commit and push any new application, test, documentation or `requirements.txt` changes
    to `Divyansh1-3/Emotion-Detection-from-Text-Project`, branch `main`.
 2. In [Community Cloud](https://share.streamlit.io/), open the existing app and its build logs.
    Keep main file `app.py` and Python `3.13`. No secrets or API key are required.
@@ -36,6 +39,11 @@ Use a private browser window, without the owner's signed-in session.
 
 ## Troubleshooting
 
+- For local setup, run `.\.venv\Scripts\python.exe -m pip install -r requirements.txt`
+  from the repository folder. The existing Windows Python 3.13 environment was verified
+  on 1 November 2026: dependencies installed, all 22 tests passed, and real-model
+  dashboard analysis, chart, history and download controls worked. Cloud installation
+  does not install packages into a separate local environment.
 - A model-loading error means no complete analysis was produced. Check package installation,
   Hugging Face connectivity and available memory, then retry Analyze text.
 - The pinned models and tokenizers must download before offline inference works.

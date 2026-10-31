@@ -2,7 +2,10 @@
   "date": "2026-11-01",
   "implementation": "Pretrained DistilRoBERTa emotion plus RoBERTa irony in Streamlit",
   "base_commit": "28fa6de",
-  "changes_committed": false,
+  "changes_committed": true,
+  "implementation_commit": "7f159b6",
+  "implementation_commit_published": true,
+  "documentation_revision_committed": true,
   "source_sha256": {
     "app.py": "b57a9d0822f72bf1d23f9b5f1bc673e77d9259c6411c24b587a13a8a47cce726",
     "emotion_model.py": "176170eb8eb043f0fa8778a134f361b94312fc9bb911b1c46907d7aac398d3e8",
@@ -21,36 +24,122 @@
       "python": "3.13.14",
       "streamlit": "1.66.1",
       "scope": "Controlled transformer outputs; no actual neural inference in AppTest.",
-      "command": "python -m unittest discover -s tests -v",
-      "real_model_tests_skipped_in_this_run": 4
+      "command": "python -B -m unittest discover -s tests -p test_project.py -v"
     },
     "pretrained_integration": {
       "passed": 4,
       "failed": 0,
-      "python": "3.11.9",
-      "torch": "2.14.0",
+      "python": "3.13.14",
+      "torch": "2.14.0+cpu",
       "transformers": "5.18.0",
-      "scope": "Actual pinned cached weights with HF_HUB_OFFLINE=1; CPU float16. Ran in the retained Python 3.11 environment.",
-      "command": "RUN_TRANSFORMER_TESTS=1 python -m unittest discover -s tests -p test_transformers.py -v"
+      "scope": "Actual pinned cached weights with HF_HUB_OFFLINE=1; CPU float16. Ran in the project's Windows Python 3.13 .venv.",
+      "command": "RUN_TRANSFORMER_TESTS=1 HF_HUB_OFFLINE=1 python -B -m unittest discover -s tests -p test_transformers.py -v"
     }
   },
   "evaluation": "transformer-evaluation.json",
-  "clean_dependency_install_verified": false,
-  "current_python313_app_environment_has_transformer_dependencies": false,
-  "environment_note": "Network/package-index access was unavailable. The existing Python 3.13 environment still needs pip install -r requirements.txt. UI and model checks were run separately in the available environments.",
+  "clean_dependency_install_verified": true,
+  "clean_dependency_install_scope": "GitHub Actions Ubuntu Python 3.13 dependency-install step in successful run 41246313817; not the local Windows Python 3.13 environment.",
+  "current_python313_app_environment_has_transformer_dependencies": true,
+  "environment_note": "Pinned requirements installed into the existing project .venv on Windows Python 3.13.14. pip check found no broken requirements. All 18 contract/dashboard tests and 4 real-model integration tests passed. Tests required execution outside the read-only sandbox because Streamlit and PyTorch use temporary/cache directories.",
+  "github_actions": {
+    "url": "https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41246313817",
+    "commit": "7f159b6",
+    "status": "success",
+    "verified_date": "2026-11-01",
+    "verification_method": "Public GitHub Actions run summary read through the web connector; workflow source defines dependency installation, contract/dashboard tests and real-model integration.",
+    "individual_logs_inspected": false
+  },
   "browser_visual_check_verified": false,
   "public_deployment": {
     "url": "https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/",
     "previous_version": "Owner confirmed private-window access, emotion inference, history and download.",
-    "transformer_revision_verified": false,
-    "status": "Requires push, redeployment and public smoke check."
+    "transformer_revision_verified": true,
+    "verification_method": "Owner-reported successful test after uploading the transformer version on 2026-11-01.",
+    "independent_browser_verified": false,
+    "independent_access_recheck": "2026-11-01: approved curl request to /_stcore/health received HTTP 303, then following the redirect timed out after 15 seconds. This does not establish app health; independent live UI verification remains unavailable.",
+    "status": "Transformer source published and owner reports updated app working. Independent live UI verification remains unavailable."
   },
-  "word_documents": "Existing Word documents describe the historical TF-IDF version; revision required before submission with transformers.",
+  "word_documents": "Report, SRS and synopsis revised for implementation commit 7f159b6. All 13 rendered pages reviewed; final copies synchronized to repository docs and workspace Submission-Ready. These document revisions accompany this verification record.",
   "historical_tfidf_verification": "verification-tfidf.json",
   "local_model_memory": {
     "model_parameter_MiB": 394.4,
     "working_set_MiB": 836.6,
     "peak_working_set_MiB": 1312.2,
     "scope": "Windows Python 3.11 process after loading both CPU float16 models; excludes Streamlit and is not a cloud guarantee."
+  },
+  "local_dependency_install": {
+    "verified": true,
+    "date": "2026-11-01",
+    "fresh_environment": false,
+    "command": ".venv/Scripts/python.exe -m pip install --disable-pip-version-check --timeout 15 --retries 1 -r requirements.txt",
+    "versions": {
+      "python": "3.13.14",
+      "torch": "2.14.0+cpu",
+      "transformers": "5.18.0",
+      "streamlit": "1.66.1"
+    },
+    "pip_check": "No broken requirements found."
+  },
+  "network_access_check": {
+    "date": "2026-11-01",
+    "execution": "Approved execution outside the network-restricted sandbox.",
+    "method": "curl HEAD requests with 5-second connect and 10-second total timeouts.",
+    "http_status": {
+      "https://github.com": 200,
+      "https://pypi.org/simple/": 200,
+      "https://huggingface.co": 200
+    }
+  },
+  "local_dashboard_smoke": {
+    "passed": true,
+    "date": "2026-11-01",
+    "scope": "Streamlit AppTest with actual pinned cached models in the project .venv; not a browser visual check or an accuracy benchmark.",
+    "successful_analyses": 4,
+    "history_count": 4,
+    "chart_and_download_controls_present": true,
+    "cases": [
+      {
+        "text": "I feel happy and excited about my new job!",
+        "emotion": "joy",
+        "sarcasm": {
+          "score": 0.8255897287367244,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        }
+      },
+      {
+        "text": "Please make sure to back up your database before initiating the migration.",
+        "emotion": "neutral",
+        "sarcasm": {
+          "score": 0.17974642605723026,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        }
+      },
+      {
+        "text": "Great, it broke the first day...",
+        "emotion": "sadness",
+        "sarcasm": {
+          "score": 0.9142141597638219,
+          "detected": true,
+          "uncertain": false,
+          "label": "Likely sarcasm"
+        }
+      },
+      {
+        "text": "I am busy right now, can I ignore you some other time?",
+        "emotion": "sadness",
+        "sarcasm": {
+          "score": 0.04031343698034529,
+          "detected": false,
+          "uncertain": false,
+          "label": "Sarcasm not detected"
+        }
+      }
+    ],
+    "known_sarcasm_miss_persists": true,
+    "observed_sincere_joy_false_positive": true
   }
 }

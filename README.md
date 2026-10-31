@@ -40,6 +40,10 @@ For an existing environment, rerun the **pip install** command: the former
 Streamlit/scikit-learn-only environment does not contain the new model dependencies.
 Then use `start_app.bat` or the Streamlit command and open http://localhost:8501.
 
+The local Windows Python 3.13 environment was verified on 1 November 2026 with
+PyTorch 2.14.0+cpu and Transformers 5.18.0. Dependency checks, all 22 tests, and
+a dashboard smoke check using real cached models passed. See [verification status](docs/verification.json).
+
 On Linux/macOS, use `python3.13 -m venv .venv` and `.venv/bin/python`.
 The requirements select CPU-only PyTorch wheels on Linux/Windows. No API key is needed.
 
@@ -59,9 +63,12 @@ not a paid model API. A cloud visit necessarily sends the entered text to your a
 
 [Public app](https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/)
 
-The owner verified the previous six-label app in a private browser session on
-1 November 2026. **The restored transformer version still requires a push/redeployment
-and a new public smoke check.** That earlier check is not verification of these changes.
+The transformer implementation is published as commit `7f159b6`. Its
+[GitHub Actions workflow](https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41246313817)
+passed, including dependency installation and both test suites. On 1 November 2026,
+the owner confirmed uploading and testing the updated public app successfully.
+This is owner-reported deployment verification; an independent live browser check
+was unavailable. The earlier private-window check covered the previous app version.
 
 Keep repository `Divyansh1-3/Emotion-Detection-from-Text-Project`, branch `main`,
 entrypoint `app.py`, Python `3.13`, and no secrets. Follow [deployment.md](docs/deployment.md).
@@ -115,6 +122,7 @@ See [verification status](docs/verification.json) for the scope of this revision
 
 ## Submission documents
 
-See [document status](docs/README.md) before submitting the report, SRS, or synopsis.
-The application source and evaluation records distinguish the restored transformer behavior
-from the earlier simplified app and from public deployment verification.
+The [report, SRS and synopsis](docs/README.md) are revised for the transformer
+implementation, with all 13 rendered pages checked. They include current model
+details, regression results, deployment evidence and the known sarcasm limitation.
+The revised documents and current local runtime verification are included in this repository.
