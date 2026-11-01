@@ -22,7 +22,7 @@
 .st-key-summary_cards [data-testid="stMetric"] { background: #fff; border: 1px solid #e0e7f1; border-radius: 12px; padding: 17px 20px; border-top: 3px solid #6b8ce0; }
 .st-key-summary_cards [data-testid="stMetricValue"] { font-size: 28px; font-weight: 700; }
 .st-key-summary_cards [data-testid="stMetricLabel"] { color: #6a7990; font-size: 13px; }
-.st-key-input_panel, .st-key-output_panel, .st-key-history_panel {
+.st-key-input_panel, .st-key-output_panel, .st-key-history_panel, .st-key-batch_panel {
     background: white; border: 1px solid #dfe6f0; border-radius: 14px; padding: 24px;
     box-shadow: 0 2px 6px #18304b03;
 }
@@ -71,3 +71,5 @@
     .empty-result { min-height: 330px; }
     .project-footer { align-items: flex-start; flex-direction: column; }
 }
+
+.st-key-batch_panel { margin-top: 20px; }

@@ -8,6 +8,7 @@ import streamlit as st
 
 from emotion_model import EMOTION_MODEL, SARCASM_MODEL, MAX_CHARACTERS, ModelUnavailableError, predict_emotion
 from result_text import download_report, explanation
+from batch_analysis import MAX_BATCH_ROWS, analyze_batch, batch_csv, display_rows, parse_csv, parse_lines
 
 st.set_page_config(page_title="Emotion & Sarcasm | P_098", page_icon="💬", layout="wide")
 st.html(f"<style>{Path(__file__).with_name('styles.css').read_text(encoding='utf-8')}</style>")
@@ -62,11 +63,60 @@ def clear_input():
 
 def reset_session():
     clear_input()
+    clear_batch_input()
     state["history"] = []
     state["analysis_count"] = 0
     state["score_total"] = 0.0
     state["uncertain_count"] = 0
     state["sarcasm_count"] = 0
+
+
+def clear_batch_result():
+    state.pop("batch_results", None)
+    state.pop("batch_error", None)
+
+
+def clear_batch_input():
+    clear_batch_result()
+    state["batch_text"] = ""
+    state["batch_upload_generation"] = state.get("batch_upload_generation", 0) + 1
+
+
+def record_result(result, text):
+    result = {**result, "text": text.strip(),
+              "time": datetime.now().astimezone().isoformat(timespec="seconds")}
+    state["analysis_count"] += 1
+    state["score_total"] += result["score"]
+    state["uncertain_count"] += int(result["uncertain"] or result["sarcasm"]["uncertain"])
+    state["sarcasm_count"] += int(result["sarcasm"]["detected"])
+    state["history"] = [result, *state["history"]][:10]
+    return result
+
+
+def analyze_batch_input():
+    clear_batch_result()
+    try:
+        if state.get("batch_input_mode", "Paste lines") == "Upload CSV":
+            uploaded = state.get(f"batch_upload_{state.get('batch_upload_generation', 0)}")
+            if uploaded is None:
+                raise ValueError("Choose a CSV file first.")
+            rows = parse_csv(uploaded.getvalue())
+        else:
+            rows = parse_lines(state.get("batch_text", ""))
+    except ValueError as error:
+        state["batch_error"] = str(error)
+        return
+    state["batch_results"] = []
+    progress = st.progress(0, text="Loading models and analyzing the batch...")
+    try:
+        for index, outcome in enumerate(analyze_batch(rows), 1):
+            if outcome["result"] is not None:
+                outcome["result"] = record_result(outcome["result"], outcome["text"])
+            state["batch_results"].append(outcome)
+            progress.progress(index / len(rows), text=f"Analyzed {index} of {len(rows)} rows")
+    finally:
+        progress.empty()
+
 
 
 def analyze():
@@ -81,14 +131,7 @@ def analyze():
         state["error"] = str(error)
         state["model_error"] = True
         return
-    result["text"] = state["text"].strip()
-    result["time"] = datetime.now().astimezone().isoformat(timespec="seconds")
-    state["result"] = result
-    state["analysis_count"] += 1
-    state["score_total"] += result["score"]
-    state["uncertain_count"] += int(result["uncertain"] or result["sarcasm"]["uncertain"])
-    state["sarcasm_count"] += int(result["sarcasm"]["detected"])
-    state["history"] = [result, *state["history"]][:10]
+    state["result"] = record_result(result, state["text"])
 
 
 st.html('''
@@ -195,12 +238,47 @@ with right, st.container(border=True, key="output_panel"):
         st.download_button("Save result", report, file_name="emotion-result.txt", mime="text/plain",
                            icon=":material/download:", on_click="ignore")
 
+
+with st.container(border=True, key="batch_panel"):
+    st.subheader("Batch analysis")
+    st.caption(f"Analyze up to {MAX_BATCH_ROWS} English sentences in one batch. Each row has its own result or error.")
+    st.radio("Batch input", ["Paste lines", "Upload CSV"], key="batch_input_mode",
+             horizontal=True, on_change=clear_batch_result)
+    if state["batch_input_mode"] == "Paste lines":
+        st.text_area("Sentences to analyze", key="batch_text", height=160,
+                     max_chars=MAX_BATCH_ROWS * (MAX_CHARACTERS + 1),
+                     placeholder="One sentence per line", on_change=clear_batch_result)
+    else:
+        st.file_uploader("Upload a CSV with a text column", type=["csv"], max_upload_size=1,
+                         key=f"batch_upload_{state.get('batch_upload_generation', 0)}",
+                         on_change=clear_batch_result,
+                         help="UTF-8 CSV, up to 50 data rows and 1 MB. Extra columns are allowed.")
+        st.caption('Example CSV: a header named text, followed by one quoted sentence per row.')
+    st.caption("Each sentence may contain up to 1,000 characters. Blank or invalid rows are reported as errors.")
+    batch_actions = st.columns([2, 1, 3])
+    batch_actions[0].button("Analyze batch", key="analyze_batch", type="primary",
+                            on_click=analyze_batch_input, width="stretch")
+    batch_actions[1].button("Clear batch", key="clear_batch", on_click=clear_batch_input, width="stretch")
+    if state.get("batch_error"):
+        st.warning(state["batch_error"])
+    if "batch_results" in state:
+        outcomes = state["batch_results"]
+        successful = sum(item["status"] == "success" for item in outcomes)
+        failed = len(outcomes) - successful
+        st.info(f"Batch complete: {successful} successful, {failed} failed, {len(outcomes)} total.")
+        st.dataframe(display_rows(outcomes), hide_index=True, width="stretch")
+        st.download_button("Download batch CSV", batch_csv(outcomes), file_name="emotion-batch-results.csv",
+                           mime="text/csv", key="batch_download", on_click="ignore")
+        st.caption("Successful rows update session counts and recent history. Failed rows have no prediction. "
+                   "The CSV includes both model revisions and all seven emotion scores.")
+
+
 with st.container(border=True, key="history_panel"):
     heading, reset = st.columns([4, 1])
     heading.subheader("Recent analyses")
     heading.caption("Your 10 most recent results in this session. Text is not saved to a database.")
     reset.button("Reset session", key="reset", on_click=reset_session,
-                 disabled=state["analysis_count"] == 0, width="stretch")
+                 disabled=state["analysis_count"] == 0 and not state.get("batch_results"), width="stretch")
     if state["history"]:
         st.dataframe([
             {"Text": item["text"], "Emotion": item["emotion"].title(),

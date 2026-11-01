@@ -7,6 +7,26 @@ Enter a sentence and click **Analyze text**. The dashboard shows seven emotion s
 a separate sarcasm assessment, session counts, the latest ten results, and **Save result**.
 Sarcasm does not automatically change the emotion label.
 
+## Batch analysis
+
+Use **Batch analysis** to paste one sentence per line or upload a UTF-8 CSV
+with one column named `text`. Other columns are allowed. Each batch supports
+up to **50 rows**, each subject to the same 1,000-character and 512-token limits.
+CSV uploads are limited to **1 MB**.
+
+Select **Analyze batch** to get a result or an explicit error for every row,
+in input order. Successful rows update the session counts and the latest ten
+history entries. Invalid rows are not counted as analyses and have no fabricated
+prediction. If a model becomes unavailable, remaining rows are marked as not
+analyzed so they can be retried.
+
+**Download batch CSV** includes row status, errors, both assessments, uncertainty,
+all seven emotion scores and model revisions. Text that could be interpreted as
+a spreadsheet formula is prefixed with an apostrophe in the download.
+**Clear batch** clears batch input and results; **Reset session** also clears
+all single and batch results, history and counters. Editing or replacing batch
+input clears its previous result.
+
 ## Models
 
 | Task | Pretrained checkpoint | Output |
@@ -113,6 +133,20 @@ The CI workflow runs both the fast tests and real-model integration.
 regression examples and known failures. These hand-written, previously reviewed examples
 are **not an independent benchmark**. The report distinguishes raw binary argmax metrics
 from the dashboard's uncertain category.
+
+### Measured F1 results
+
+| Task | Examples | Accuracy | Macro F1 |
+| --- | ---: | ---: | ---: |
+| Seven-class emotion | 35 | 91.4% | 0.913 |
+| Binary irony raw argmax | 35 | 85.7% | 0.844 |
+
+These are the previously reviewed development regression examples recorded in
+[transformer-evaluation.json](docs/transformer-evaluation.json), not an independent
+benchmark. Sarcasm-positive precision is **0.800**, recall **1.000**, and F1
+**0.889** at a raw 0.5 cutoff (20 TP, 5 FP, 0 FN, 10 TN).
+The dashboard separately uses a 0.2–0.8 uncertain band; its display counts are
+22 likely-sarcasm, 2 not-detected and 11 uncertain cases.
 
 The old **88.2% accuracy / 0.842 macro-F1** figures, `model/emotion_model.pkl.gz`,
 `model/evaluation.json`, compressed DAIR-AI data, and `train_model.py` belong to the
