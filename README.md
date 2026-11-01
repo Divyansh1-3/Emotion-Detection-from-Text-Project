@@ -83,12 +83,13 @@ not a paid model API. A cloud visit necessarily sends the entered text to your a
 
 [Public app](https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/)
 
-The transformer implementation is published as commit `7f159b6`. Its
-[GitHub Actions workflow](https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41246313817)
-passed, including dependency installation and both test suites. On 1 November 2026,
-the owner confirmed uploading and testing the updated public app successfully.
-This is owner-reported deployment verification; an independent live browser check
-was unavailable. The earlier private-window check covered the previous app version.
+Application commit `c751330` adds batch analysis. Its
+[GitHub Actions workflow](https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41256387607)
+passed dependency installation and the contract, batch, dashboard and real-model tests.
+On 1 November 2026, the updated app passed an independent check in a fresh
+private Chrome window with no saved cookies or owner login. Single inference,
+the chart, history, text download, pasted batches, CSV upload/export and reset
+worked. See [browser verification](docs/public-browser-verification.json).
 
 Keep repository `Divyansh1-3/Emotion-Detection-from-Text-Project`, branch `main`,
 entrypoint `app.py`, Python `3.13`, and no secrets. Follow [deployment.md](docs/deployment.md).
@@ -156,7 +157,8 @@ See [verification status](docs/verification.json) for the scope of this revision
 
 ## Submission documents
 
-The [report, SRS and synopsis](docs/README.md) are revised for the transformer
-implementation, with all 13 rendered pages checked. They include current model
-details, regression results, deployment evidence and the known sarcasm limitation.
-The revised documents and current local runtime verification are included in this repository.
+The [current report, SRS and synopsis](docs/README.md) describe the transformer
+implementation. The seven-page report includes batch analysis, the dataset appendix,
+measured F1 results, public browser verification and known model limitations.
+The submission dataset contains 18,000 historical examples and 70 current regression
+examples; the historical data was not used to train the current transformers.

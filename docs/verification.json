@@ -7,7 +7,7 @@
   "implementation_commit_published": true,
   "documentation_revision_committed": true,
   "source_sha256": {
-    "app.py": "b57a9d0822f72bf1d23f9b5f1bc673e77d9259c6411c24b587a13a8a47cce726",
+    "app.py": "d88d21c0b7cf5783ca4bff04638b093bca59678c705e835dc1538921c98bc115",
     "emotion_model.py": "176170eb8eb043f0fa8778a134f361b94312fc9bb911b1c46907d7aac398d3e8",
     "result_text.py": "2fcf545f68165eaffba2d1e902ee1052a82050d826fb972bce9c2aa25ae22042",
     "requirements.txt": "3fcfa029999cb134cff6f87be2a8005b2f6b51a9e5a12d1dc2bfb7314a4e83b9",
@@ -15,7 +15,10 @@
     "tests/test_transformers.py": "da40866639df90da90b851c328c7e9e90bcd8038243c9eeabd416aa054e7bdd5",
     "evaluate_transformers.py": "c114647e14e35a83e22e6413d91052eb7989d7e09a44c9989b4345aedb717cea",
     "data/regression/emotion.csv": "0930bef9cc06ac46d10cb01eb098d8a3bfcea5a0fc79cee2231653e84933ec7a",
-    "data/regression/sarcasm.csv": "1f3e3a757bc0596dff6c7f68ce0ebeeb638503426ed803dd042aeab61be99646"
+    "data/regression/sarcasm.csv": "1f3e3a757bc0596dff6c7f68ce0ebeeb638503426ed803dd042aeab61be99646",
+    "batch_analysis.py": "1da446cb925b47dd9b564364a64ceee6202df209ddf8488875b51b800e030837",
+    "styles.css": "3139fc959f651201d8c447cda429d90bfb21ac2fd3772c85b181d2066e9f67e5",
+    "tests/test_batch.py": "a830b1ee72f3749e608576aa58e8bafc80a1eae934548d9153e5cce71938037c"
   },
   "tests": {
     "contract_and_dashboard": {
@@ -34,32 +37,53 @@
       "transformers": "5.18.0",
       "scope": "Actual pinned cached weights with HF_HUB_OFFLINE=1; CPU float16. Ran in the project's Windows Python 3.13 .venv.",
       "command": "RUN_TRANSFORMER_TESTS=1 HF_HUB_OFFLINE=1 python -B -m unittest discover -s tests -p test_transformers.py -v"
+    },
+    "batch_contract_and_dashboard": {
+      "passed": 15,
+      "failed": 0,
+      "scope": "Input limits, CSV parsing, row/model errors, export and session behavior with controlled outputs."
+    },
+    "all_suites": {
+      "passed": 37,
+      "failed": 0,
+      "python": "3.13.14",
+      "command": "RUN_TRANSFORMER_TESTS=1 HF_HUB_OFFLINE=1 python -B -m unittest discover -s tests -v"
     }
   },
   "evaluation": "transformer-evaluation.json",
   "clean_dependency_install_verified": true,
   "clean_dependency_install_scope": "GitHub Actions Ubuntu Python 3.13 dependency-install step in successful run 41246313817; not the local Windows Python 3.13 environment.",
   "current_python313_app_environment_has_transformer_dependencies": true,
-  "environment_note": "Pinned requirements installed into the existing project .venv on Windows Python 3.13.14. pip check found no broken requirements. All 18 contract/dashboard tests and 4 real-model integration tests passed. Tests required execution outside the read-only sandbox because Streamlit and PyTorch use temporary/cache directories.",
+  "environment_note": "Pinned requirements are installed in the Windows Python 3.13.14 project environment. pip check passed. All 37 tests passed, including 15 batch tests and four real-model integration checks.",
   "github_actions": {
-    "url": "https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41246313817",
-    "commit": "7f159b6",
+    "url": "https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41256387607",
+    "commit": "c75133057a0fb885ceca565a29352472ac1cd12c",
     "status": "success",
     "verified_date": "2026-11-01",
-    "verification_method": "Public GitHub Actions run summary read through the web connector; workflow source defines dependency installation, contract/dashboard tests and real-model integration.",
+    "verification_method": "Public GitHub REST run summary; completed with success. Workflow installs dependencies and runs contract/dashboard/batch and real-model suites.",
     "individual_logs_inspected": false
   },
-  "browser_visual_check_verified": false,
+  "browser_visual_check_verified": true,
   "public_deployment": {
     "url": "https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/",
-    "previous_version": "Owner confirmed private-window access, emotion inference, history and download.",
     "transformer_revision_verified": true,
-    "verification_method": "Owner-reported successful test after uploading the transformer version on 2026-11-01.",
-    "independent_browser_verified": false,
-    "independent_access_recheck": "2026-11-01: approved curl request to /_stcore/health received HTTP 303, then following the redirect timed out after 15 seconds. This does not establish app health; independent live UI verification remains unavailable.",
-    "status": "Transformer source published and owner reports updated app working. Independent live UI verification remains unavailable."
+    "independent_browser_verified": true,
+    "verification_method": "Chrome, headed, --incognito, fresh isolated Playwright context",
+    "initial_cookie_count": 0,
+    "owner_login_used": false,
+    "checks": [
+      "Anonymous dashboard with seven emotions and batch controls",
+      "Sincere single inference, chart and download",
+      "Sarcasm example, visible warning and history",
+      "Pasted batch with two successes and one invalid row",
+      "CSV upload and export preserve quoted text and invalid row",
+      "Reset clears batch, upload, history and counts"
+    ],
+    "status": "Public single and batch workflow verified on 2026-11-01.",
+    "evidence": "public-browser-verification.json",
+    "source_basis": "The main branch update was pushed before this test; public batch behavior was observed. The app does not expose its deployed Git SHA."
   },
-  "word_documents": "Report, SRS and synopsis revised for implementation commit 7f159b6. All 13 rendered pages reviewed; final copies synchronized to repository docs and workspace Submission-Ready. These document revisions accompany this verification record.",
+  "word_documents": "Current seven-page report updated for batch application commit c751330; all pages rendered and checked. The existing six-page SRS and one-page synopsis are retained from 7f159b6.",
   "historical_tfidf_verification": "verification-tfidf.json",
   "local_model_memory": {
     "model_parameter_MiB": 394.4,
@@ -141,5 +165,16 @@
     ],
     "known_sarcasm_miss_persists": true,
     "observed_sincere_joy_false_positive": true
+  },
+  "batch_application_commit": "c75133057a0fb885ceca565a29352472ac1cd12c",
+  "batch_application_commit_published": true,
+  "local_batch_smoke": {
+    "passed": true,
+    "scope": "Streamlit AppTest with actual cached pretrained models",
+    "rows": 4,
+    "successful": 3,
+    "failed": 1,
+    "known_sarcasm_miss_persists": true,
+    "sincere_joy_false_positive_persists": true
   }
 }

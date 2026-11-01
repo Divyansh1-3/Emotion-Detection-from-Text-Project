@@ -2,12 +2,12 @@
 
 Public URL: https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/
 
-The transformer implementation was published as commit `7f159b6`. Its
-[GitHub Actions workflow](https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41246313817)
-passed dependency installation and the contract/interface and real-model suites.
-On 1 November 2026, the owner reported uploading and testing the updated public app
-successfully. Independent live browser verification was unavailable. The earlier
-private-window check covered the previous six-label version.
+Application commit `c751330` adds batch input and per-row CSV export.
+[GitHub Actions](https://github.com/Divyansh1-3/Emotion-Detection-from-Text-Project/actions/runs/41256387607)
+passed for that commit. On 1 November 2026, the public app passed testing in a
+fresh private Chrome window with zero initial cookies and no owner login:
+single inference, sarcasm flag, chart, history, text download, pasted batch,
+CSV upload/export and reset. See [recorded checks](public-browser-verification.json).
 
 ## Publish a subsequent update
 
@@ -33,15 +33,19 @@ Use a private browser window, without the owner's signed-in session.
    Confirm a **Likely sarcasm** assessment with its own irony score.
 3. Select **Sincere statement** and analyze it. Confirm that it is not marked likely sarcasm.
 4. Confirm both assessments appear in recent history and the **Save result** download.
-5. Test blank input, **Clear text**, and **Reset session**.
-6. Keep a screenshot of the actual updated dashboard. Record the deployed commit and date.
+5. Paste a batch with valid sentences and a number-only row. Confirm a result or
+   error for every row and download the CSV.
+6. Switch to **Upload CSV**, upload a UTF-8 file with a `text` header, and check
+   results and CSV export. Up to 50 rows and 1 MB are supported.
+7. Test blank input, **Clear text**, **Clear batch**, and **Reset session**.
+8. Keep a screenshot of the actual updated dashboard. Record the deployed commit and date.
    Do not reuse the earlier app's successful check as proof of this version.
 
 ## Troubleshooting
 
 - For local setup, run `.\.venv\Scripts\python.exe -m pip install -r requirements.txt`
   from the repository folder. The existing Windows Python 3.13 environment was verified
-  on 1 November 2026: dependencies installed, all 22 tests passed, and real-model
+  on 1 November 2026: dependencies installed, all 37 tests passed, and real-model
   dashboard analysis, chart, history and download controls worked. Cloud installation
   does not install packages into a separate local environment.
 - A model-loading error means no complete analysis was produced. Check package installation,

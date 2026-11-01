@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-01T00:28:50.135Z",
+  "url": "https://emotion-detection-from-text-project-ncignaopdfgyjcymc264jq.streamlit.app/",
+  "browser": "Chrome, headed, --incognito, fresh isolated Playwright context",
+  "checks": [
+    "Anonymous dashboard with seven emotions and batch controls",
+    "Sincere single inference, chart and download",
+    "Sarcasm example, visible warning and history",
+    "Pasted batch with two successes and one invalid row",
+    "CSV upload and export preserve quoted text and invalid row",
+    "Reset clears batch, upload, history and counts"
+  ],
+  "initial_cookie_count": 0,
+  "passed": true,
+  "published_application_commit": "c75133057a0fb885ceca565a29352472ac1cd12c",
+  "source_basis": "The main branch update was pushed before this test; public batch behavior was observed. The app does not expose its deployed Git SHA."
+}
